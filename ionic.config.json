@@ -1,0 +1,7 @@
+{
+  "name": "CB",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
