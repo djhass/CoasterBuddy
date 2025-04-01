@@ -1,0 +1,44 @@
+<ion-header>
+	<ion-toolbar>
+    <ion-buttons slot="start" style="padding: 0px">
+		  <ion-button (click)="dismiss()">
+		    <ion-icon name="close" color="danger" size="large"></ion-icon>
+		  </ion-button>
+	  </ion-buttons>
+  </ion-toolbar>
+</ion-header>  
+
+
+
+<ion-card style="position:absolute; top: 15%">
+  <ion-card-header>
+    <ion-card-title style="display: flex; justify-content: center; align-items: center;">
+      Submission Form
+    </ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    <ion-list>
+      <ion-item>
+        <ion-label position="stacked">Name</ion-label>
+        <ion-input autocomplete="name" (keypress)="closeKeyboard($event.keyCode)" enterkeyhint = "done" [(ngModel)]="name" name="name" type="text" placeholder="Enter your name"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="stacked">
+          Email
+          <ion-text color="danger" [hidden]="email">*Required to Receive a Response</ion-text>
+        </ion-label>
+        <ion-input autocomplete="email" type="email" (keypress)="closeKeyboard($event.keyCode)" enterkeyhint = "done" [(ngModel)]="email" name="email" type="email" placeholder="Enter your email"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="stacked">
+          Feedback
+          <ion-text color="danger" [hidden]="!feedbackInput.value || feedbackInput.value.trim() !== ''">*Required</ion-text>
+        </ion-label>
+        <ion-textarea #feedbackInput (keypress)="closeKeyboard($event.keyCode)" enterkeyhint = "done" rows="8" cols="40" [(ngModel)]="feedback" name="feedback" placeholder="Please describe your issue or feedback below."></ion-textarea>
+      </ion-item>
+    </ion-list>
+    <ion-button expand="block" color="primary" (click)="submitClick()">
+      <ion-text [hidden]="this.showLoad">Submit</ion-text>
+      <ion-spinner [hidden]="!this.showLoad"></ion-spinner></ion-button>
+  </ion-card-content>
+</ion-card>

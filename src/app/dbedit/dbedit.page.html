@@ -1,0 +1,79 @@
+<!--Header-->
+  <ion-header>
+    <ion-toolbar class="header-toolbar">
+      <ion-buttons slot="start" style="background-color: transparent; vertical-align: middle;">
+          <ion-back-button></ion-back-button>
+      </ion-buttons>
+      <ion-title style="font-size:24px; width: 100%;">Database Entry</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+<!--Input Ride-->
+  <ion-content *ngIf="!this.inputRide">
+    <ion-toolbar class="ion-padding" style="margin-top: 10vh">
+      <div class="search-container">  
+        <ion-item lines="none" class="search-bar">
+          <ion-input placeholder="Enter Name of Ride to Add or Edit" type="text" clear-input [(ngModel)]="input" debounce = "200" (ionChange)="searchItems($event.target.value)"></ion-input>
+          <ion-icon slot="end" *ngIf="input" name="arrow-forward" color="primary" (click)="this.areYouSureMessage(input)"></ion-icon>
+        </ion-item>
+        <ion-list *ngIf="this.searchList && this.searchList.length > 0" style="background-color: white; border-radius: 24px; box-shadow: 0 1px 6px var(--ion-color-medium); position:relative; top: -44px; max-height: 410px; min-height: 100px; flex-direction: column;">
+            <ion-item style="margin-top: 5px;"></ion-item> <!--buffer-->
+            <ion-item *ngFor="let coaster of searchList" (click)="enterRide(coaster)">
+              <ion-col>
+                <ion-row>
+                  <ion-label class="ion-text-wrap" style="font-size: 18px; font-weight: 600;" #itemElement> 
+                    {{ coaster?.name }} 
+                  </ion-label>
+                </ion-row>
+                <ion-row>
+                  <ion-label class="ion-text-wrap" style="font-size: 15px; overflow:hidden; font-weight: 600" color="medium"> {{ coaster?.park?.name }}</ion-label>
+                </ion-row>
+              </ion-col>
+            </ion-item>
+        </ion-list>
+        <div class="button-container">
+          <ion-button expand="block" color="transparent" style="color: var(--ion-color-primary); text-decoration: underline" *ngIf="!input"> I don't know the name </ion-button>
+        </div>
+      </div>
+    </ion-toolbar>
+  </ion-content>
+
+  <!--Fill in ride description-->
+  <ion-content *ngIf="this.inputRide">
+    <ion-item lines="full">
+      <ion-thumbnail>
+        <ion-chip color="{{ inputRide.name ? 'success' : 'danger' }}"></ion-chip>
+      </ion-thumbnail>
+      <ion-input [(ngModel)]="inputRide.name" style="font-weight: bold" label="Name: " autocomplete="off" enterkeyhint = "done"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-thumbnail>
+        <ion-chip color="{{ inputRide.materialType ? 'success' : 'danger' }}"></ion-chip>
+      </ion-thumbnail>
+      <ion-label color="dark">Material: </ion-label>
+      <ion-select interface="popover" [(ngModel)]="inputRide.materialType">
+        <ion-select-option value="material.steel">Steel</ion-select-option>
+        <ion-select-option value="wood">Wood</ion-select-option>
+        <ion-select-option>Wood-Hybrid</ion-select-option>
+        <ion-select-option>Steel-Hybrid</ion-select-option>
+        <ion-select-option value="hybrid">Hybrid</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item lines="full">
+      <ion-thumbnail>
+        <ion-chip color="{{ inputRide.speed ? 'success' : 'danger' }}"></ion-chip>
+      </ion-thumbnail>
+      <ion-label color="dark">Speed:</ion-label>
+      <ion-input label="Speed: " [(ngModel)]="inputRide.speed" type="number" inputmode="numeric" autocomplete="off" enterkeyhint = "done" debounce = "025" style="padding-top: 15px;"></ion-input>
+    </ion-item>
+    <ion-item lines="full">
+      <ion-thumbnail>
+        <ion-chip color="{{ inputRide.height ? 'success' : 'danger' }}"></ion-chip>
+      </ion-thumbnail>
+      <ion-label color="dark">Height:</ion-label>
+      <ion-input label="Height: " [(ngModel)]="inputRide.height" type="number" inputmode="numeric" autocomplete="off" enterkeyhint = "done" debounce = "025" style="padding-top: 15px;"></ion-input>
+    </ion-item>
+    
+  </ion-content>
+

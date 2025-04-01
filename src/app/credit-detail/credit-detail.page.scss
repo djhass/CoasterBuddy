@@ -1,0 +1,33 @@
+ion-range {
+    --knob-size: 50px; 
+    --knob-background: transparent;
+    --knob-box-shadow: 0px;
+    --bar-height: 24px; 
+    --bar-background-active: rgb(0, 155, 0); 
+    padding-top: 55px;
+    pointer-events: none;
+    radius: 5px;
+    }
+      
+      ion-range::part(pin) {
+      
+        border-radius: 50%;
+        transform: scale(1.01);
+      
+        min-width: 50px;
+        height: 50px;
+    
+        font-size: 30px;
+    
+    
+      }
+    
+      ion-range::part(pin)::after {
+        content: "%";
+      }
+      
+    
+      
+    
+      
+      

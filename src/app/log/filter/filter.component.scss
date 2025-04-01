@@ -1,0 +1,19 @@
+
+
+ion-range {
+    --bar-height: 0.6vh; 
+    font-size: 20px;
+    width: 95%
+}
+
+
+ion-range::part(pin) {
+  
+    border-radius: 50%;
+    transform: scale(1.01);
+  
+    min-width: 5.924vh;
+    height: 5.924vh;
+
+    font-size: 2.1vh;
+  }

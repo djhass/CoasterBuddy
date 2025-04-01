@@ -1,0 +1,60 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title [hidden]="this.loadedPark.logo">{{this.loadedPark.name}}</ion-title>
+  </ion-toolbar>
+  <ion-toolbar [hidden]="!this.loadedPark.logo">
+    <ion-img style="height: 10vh !important; width: auto !important; align-items: center; padding-bottom: 10px;" [hidden]="!this.loadedPark.logo" [src]="this.loadedPark.logo"></ion-img>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content style="padding-top: 24px;">
+  <ion-chip (click)="website()" [disabled]="!this.loadedPark.website" style="width: 47%; height: 50px;">
+    <ion-icon color="dark" name="earth-outline" style="position: absolute; top: 55%; left: 45%; height: 70%; transform: translate(-50%, -50%); width: 40px; height: 40px;"></ion-icon>
+  </ion-chip>
+  <ion-chip (click)="maps()" style="width: 47%; height: 50px;">
+    <ion-icon color="dark" name="map-outline" style="position: absolute; top: 55%; left: 45%; height: 70%; transform: translate(-50%, -50%); width: 40px; height: 40px;"></ion-icon>
+  </ion-chip>
+  <ion-card>
+    <ion-list>
+      <ion-item class="frontList" mode="md" detail="false" *ngFor="let coaster of coasters;">
+        <ion-avatar slot="start" style="padding-left: 0px;">
+          <ion-thumbnail size="large">
+            <!--Green Plus Mark-->
+            <ion-icon name="add" color="success" size="large" (click)="coastersService.pushCredit(coaster); coastersService.setData()" [hidden]="coastersService.creditIsInList(coaster.id)"></ion-icon> 
+            <!--Tally Counter-->
+            <ion-button [hidden]="!coastersService.creditIsInList(coaster.id) || !coastersService.getCredit(coaster.id).tally" color="transparent" style="--box-shadow:none; --ripple-color: transparent">
+              <ion-text color="dark" style="font-size: 20px;" (click)="coastersService.tallyCredit(coaster.id); coastersService.setData()">{{ coastersService.getCredit(coaster.id).tally }}</ion-text>
+              <ion-icon color="dark" name="add"></ion-icon>
+            </ion-button>
+            <!--Generic Checkmark for incomplete Tally-->
+            <ion-icon name="checkmark" size="large" [hidden]="coastersService.getCredit(coaster.id).tally > 0 || !coastersService.creditIsInList(coaster.id)"></ion-icon>
+          </ion-thumbnail>
+          
+        </ion-avatar> 
+        <ion-avatar slot="end" [routerLink]="['/' + this.page + '/coaster', coaster.id]" [hidden]="coastersService.creditIsInList(coaster.id)">
+          <ion-thumbnail size="large">
+            <ion-icon name="information-circle-outline" color="dark" size="large"></ion-icon>
+          </ion-thumbnail>
+        </ion-avatar> 
+        <ion-avatar slot="end" [routerLink]="['/' + this.page + '/credit', coaster.id]" [hidden]="!coastersService.creditIsInList(coaster.id)">
+          <ion-thumbnail size="large">
+            <ion-icon name="information-circle-outline" color="dark" size="large"></ion-icon>
+          </ion-thumbnail>
+        </ion-avatar>
+        <ion-col>
+            <ion-row>
+              <ion-label class="ion-text-wrap" style="font-size: 18px;" > 
+                {{ coaster.name }} 
+              </ion-label>
+            </ion-row>
+          </ion-col>
+      </ion-item>
+    </ion-list>
+  </ion-card>
+  
+  <ion-img [hidden]="!this.loadedPark.map" [src]="this.loadedPark.map"></ion-img>
+    
+</ion-content>

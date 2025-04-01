@@ -1,0 +1,101 @@
+
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Queue Times</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-title style="font-size: 14px; font-weight: 100; "> 
+      <p align="center">
+        <a style="color: --var(--ion-color-tertiary)" href="https://queue-times.com/">Powered by Queue-Times.com</a>
+      </p>
+    </ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar (keypress)="this.mainService.closeKeyboard($event.keyCode)" (ionFocus)="clearFab()" (ionBlur)="showFab()" enterkeyhint = "done" animated placeholder="Find Park" debounce="180" inputmode="text" (ionInput)="searchItems($event)"></ion-searchbar>
+    <ion-spinner style="position: absolute; top: 20vh; left: 35vw; width: 30vw" [hidden]="!loading"></ion-spinner>
+    <ion-list *ngFor="let Park of searchParks">
+      <ion-item [routerLink] ="['./park-times', Park.id]" style="--background: transparent">
+        <ion-text text-wrap style="font-size: 22px; font-style: bold;" color="dark"> 
+          {{ Park.name }}
+        </ion-text>
+      </ion-item>
+    </ion-list>
+    <br>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  
+  <ion-card color="tertiary-light" *ngIf="closeParks.length > 0">
+    <ion-card-title>
+      <ion-text color="dark">
+        <p align="center" style=" padding-top: 5px;  padding-bottom: 5px; font-style: bold; font-size: 25px;">
+          Based on your location:
+        </p>
+      </ion-text>
+    </ion-card-title>
+    <ion-card-content>
+      <ion-item *ngFor="let park of closeParks" [routerLink] ="['./park-times', park.id]" style="--background: transparent;">
+        <ion-text text-wrap style="font-size: 22px; font-style: bold;" color="dark"> 
+          {{ park.name }}
+        </ion-text>
+      </ion-item>
+    </ion-card-content>
+  </ion-card>
+  <ion-card *ngFor = "let Parent of parkObj" color="light">
+    <ion-card-title>
+      <ion-text>
+        <p align="center" style=" padding-top: 5px;  padding-bottom: 5px; font-style: bold; font-size: 25px;" >
+          {{ Parent.name }}
+        </p>
+      </ion-text>
+    </ion-card-title>
+    <ion-card-content>
+      <ion-list *ngFor = "let Park of Parent.parks" style="background: transparent;">
+        <ion-item  [routerLink] ="['./park-times', Park.id]" style="--background: transparent">
+          <ion-text text-wrap style="font-size: 22px; font-style: bold;" color="dark"> 
+            {{ Park.name }}
+          </ion-text>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
+
+<!--Home Button-->
+<ion-fab [hidden]="fabHidden" vertical="bottom" horizontal="center" slot="fixed" style="height: 8vh">
+  <ion-fab-button [routerLink]="'/home'" routerDirection="forward" color="medium">
+    <ion-icon style="color: white;" name="home"></ion-icon>
+  </ion-fab-button>
+</ion-fab>
+
+  <ion-toolbar style="width: 100%; height: 7.82vh;">
+    <ion-tabs >
+      <ion-tab-bar style="min-height: 45px; padding-bottom: 12px;" slot="bottom" selected-tab="times" > 
+        <ion-tab-button tab="times" [routerLink]="'/times'" routerDirection="back">
+          <ion-icon name="stopwatch"></ion-icon>
+          <ion-label>Wait Times</ion-label>
+        </ion-tab-button>
+
+        <ion-tab-button [routerLink]="'/log'" routerDirection="forward">
+          <ion-icon name="clipboard"></ion-icon>
+          <ion-label>Log Rides</ion-label>
+        </ion-tab-button>
+
+        <ion-tab-button mode="ios"></ion-tab-button> <!--Blank Space For Home Button-->
+
+        <ion-tab-button [routerLink]="'/database'" routerDirection="forward">
+          <ion-icon name="book"></ion-icon>
+          <ion-label>Database</ion-label>
+        </ion-tab-button>
+
+        <ion-tab-button [routerLink]="'/navigate'" routerDirection="forward">
+          <ion-icon name="compass"></ion-icon>
+          <ion-label>Navigate</ion-label>
+        </ion-tab-button>
+      </ion-tab-bar>
+    </ion-tabs>
+  </ion-toolbar>
+
+  
+

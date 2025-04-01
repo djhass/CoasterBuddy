@@ -1,0 +1,39 @@
+<ion-header>
+  <ion-toolbar color="light">
+    <ion-title> 
+      <p align="center" style="padding-top: 10px; font-style: bold; font-size: 30px;" >
+        {{this.list.length}}
+      </p>
+    </ion-title>
+    <ion-buttons  slot="start" style="padding-left: 0px; padding-top: 10px">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close-sharp"  size="large"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button (click)="revert()">
+        Revert
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item *ngFor="let credit of list; let indexOfelement=index;">
+    <ion-avatar>
+      <ion-thumbnail size="small" style="padding-left: 2px;">
+        <ion-label style="font-size: 22px; padding-top: 4px; font-weight: 600;" color="dark"> {{ indexOfelement + 1}}</ion-label>
+      </ion-thumbnail>
+    </ion-avatar>
+      <ion-col>
+        <ion-row>
+          <ion-label class="ion-text-wrap" style="font-size: 18px; font-weight: 600;" #itemElement> 
+            {{ credit.name }} 
+          </ion-label>
+        </ion-row>
+        <ion-row>
+          <ion-label class="ion-text-wrap" style="font-size: 15px; overflow:hidden; font-weight: 600" color="medium"> {{ credit.park.name }}</ion-label>
+        </ion-row>
+      </ion-col>
+  </ion-item>
+</ion-content>

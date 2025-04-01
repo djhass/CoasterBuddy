@@ -1,0 +1,146 @@
+<ion-content style="display: flex; justify-content: space-around; align-items: flex-start;">
+  <div #map id="map">
+    <ion-spinner style="position: absolute; top: 155px; left: 170px; height: 25px; width: 25px;"></ion-spinner>
+  </div >
+  <ion-item [hidden]="this.selectedPark?.name == undefined">
+    <ion-buttons slot="end">
+      <ion-button [routerLink]="['../home/park', this.selectedPark?.name]" style="padding-right: 18px;">
+        <ion-icon name="information-circle-outline" slot="icon-only" size="large" color="dark"></ion-icon>
+      </ion-button>
+      <ion-button (click)="pushTripAlert(this.selectedPark)">
+        <ion-icon name="add" slot="icon-only" size="large" color="dark"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-col>
+      <ion-row>
+        <ion-label style="font-size: 18px; font-weight: bold;">{{this.selectedPark?.name}}</ion-label>
+      </ion-row>
+    </ion-col>      
+  </ion-item>
+  <ion-item style="padding-top: 6px;">
+    <ion-chip style="width: 31%" (click)="addMarkersToMap()">
+      <ion-checkbox color="tertiary" [checked]="mapOptions.redMarker"></ion-checkbox>
+      <ion-img style="position: absolute; right: 25%;" src="/assets/Maps/red-dot.png"></ion-img>
+    </ion-chip>
+    <ion-chip style="width: 31%" (click)="addMarkersToMap()">
+      <ion-checkbox color="tertiary" [checked]="mapOptions.blueMarker"></ion-checkbox>
+      <ion-img style="position: absolute; right: 25%;" src="/assets/Maps/ltblue-dot.png"></ion-img>
+    </ion-chip>
+    <ion-chip style="width: 31%" (click)="calculateAndDisplayRoute()">
+      <ion-checkbox color="tertiary" [checked]="mapOptions.route"></ion-checkbox>
+      <ion-icon name="analytics" style="color: blue; position: absolute; right: 35%;"></ion-icon>
+    </ion-chip>
+  </ion-item>
+  <!--<ion-searchbar enterkeyhint = "Done" (ionFocus)="clearFab()" (ionBlur)="showFab()" (keypress)="mainService.closeKeyboard($event.keyCode)" inputmode = "search" animated placeholder="Search Parks" inputmode="text" debounce = "025" (ionChange)="searchItems($event)" (ionFocus)="searchItems($event)" (ionBlur)="searchBarCleared()"></ion-searchbar>-->
+  <ion-item *ngFor="let park of searchParks" (click)="openWindow(park)" clickable="true">
+    <ion-col>
+      <ion-row>
+        <ion-label style="font-style: bold; font-size: 18px"> {{ park.name }} </ion-label>
+      </ion-row>
+    </ion-col>
+    <ion-badge [hidden] = '!parksService.parkIsVisited(park)' slot="end">
+      <ion-label >Visited</ion-label>
+    </ion-badge>
+  </ion-item>
+  
+
+  <ion-list>
+    <ion-list-header>
+        <ion-chip (click)="listName()" style="background-color: var(--ion-color-tertiary); --ion-fab-button-size: 12px; min-width: 90px;">
+          <ion-label color="dark" style="margin-left: auto; margin-right: auto;">
+            Add New
+          </ion-label>
+        </ion-chip>
+        <div style="white-space: nowrap; overflow-x:scroll;">
+        <ion-chip *ngFor="let trip of this.tripList; let indexOfelement=index;" (click)="this.number = indexOfelement; resetMapOptions(); tripSelectChanged();" style="background-color: {{ this.number == indexOfelement ? 'var(--ion-color-tertiary-light)' : 'var(--ion-color-light)' }}">
+          <ion-label style="margin-left: auto; margin-right: auto;">
+            {{ trip.name }}
+          </ion-label>
+        </ion-chip>
+      </div>
+      <ion-button (click)="deleteTrip();" style="width: 60px; padding-left: 0px; padding-right: 0px;">
+        <ion-icon color="dark" style="height: 30px !important; width: 30px !important; padding-right: 0px; padding-left: 0px;" name="trash-outline"></ion-icon>
+      </ion-button>
+    </ion-list-header>
+    
+    <ion-item style="padding-left: 16px; padding-top: 4px; padding-down: 4px;">
+      <ion-chip style="width: 45%">
+        <ion-icon color="dark" name="analytics"></ion-icon>
+        <ion-spinner [hidden]="this.distance != -1 || this.tripList.length == 0 || this.tripList[0] == 0"></ion-spinner>
+        <ion-text [hidden]="this.time == -1" align="center" style="font-size: 18px;">
+          <ion-text>{{ this.distance }}</ion-text>
+          <ion-text [hidden]="mainService.settings.units == 'metric'"> &nbsp; Mi</ion-text>
+          <ion-text [hidden]="mainService.settings.units == 'imperial'"> &nbsp; Km</ion-text>
+        </ion-text>
+      </ion-chip>
+      <ion-chip style="width: 45%">
+        <ion-icon color="dark" name="time-outline"></ion-icon>
+        <ion-spinner [hidden]="this.time != -1 || this.tripList.length == 0 || this.tripList[0] == 0"></ion-spinner>
+        <ion-text [hidden]="this.time == -1" align="center" style="font-size: 18px;">
+          <ion-text >{{ toHoursAndMinutes(this.time) }}</ion-text>
+        </ion-text>
+      </ion-chip>
+    </ion-item>
+    <ion-item style="--border-width: 0; --border-style: 0; --border-color: transparent;" [hidden]="!(this.tripList[this.number] && this.tripList[this.number]?.list.length == 0)">
+        <p class="ion-text-wrap" align="center" style="font-style: bold; font-size: 20px;" >
+          Click on a location and add it to the list with "+"
+        </p>
+    </ion-item>
+    <ion-reorder-group (ionItemReorder)="reorderItems($event)" [disabled]="false">
+      <ion-item-sliding *ngFor="let trip of this.tripList[this.number]?.list;let indexOfelement=index;" fill="outline">
+        <ion-item-options side="end">
+          <ion-item-option color="danger" (click)="deleteFromTrip(indexOfelement)">
+            <ion-icon name="trash-outline" size="large" style="padding: 5px;"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+        <ion-item (click)="openWindow(this.trip)">
+          <ion-label text-wrap style="font-size: 16px; font-style: bold;">
+            {{ trip.name }}
+          </ion-label>
+          <ion-buttons>
+            <ion-button style="padding-right: 20px;" (click)="$event.stopPropagation();" [routerLink]="['../home/park', trip.name]">
+              <ion-icon color="dark" name="information-circle-outline" slot="icon-only" ></ion-icon>
+            </ion-button>
+          </ion-buttons>
+          <ion-reorder slot="end"></ion-reorder>
+        </ion-item>
+      </ion-item-sliding>
+    </ion-reorder-group>
+  </ion-list>
+</ion-content>
+
+<!--Home Button-->
+<ion-fab  [hidden]="fabHidden" vertical="bottom" horizontal="center" slot="fixed" style="height: 8vh">
+  <ion-fab-button [routerLink]="'/home'" routerDirection="back" color="medium">
+    <ion-icon style="color: white;" name="home"></ion-icon>
+  </ion-fab-button>
+</ion-fab>
+
+<ion-toolbar style="width: 100%; height: 7.82vh;" >
+  <ion-tabs>
+    <ion-tab-bar style="min-height: 45px; padding-bottom: 12px;" slot="bottom" selected-tab="navigate" > 
+
+      <ion-tab-button [routerLink]="'/times'" routerDirection="back">
+        <ion-icon name="stopwatch"></ion-icon>
+        <ion-label>Wait Times</ion-label>
+      </ion-tab-button>
+
+      <ion-tab-button [routerLink]="'/log'" routerDirection="back">
+        <ion-icon name="clipboard"></ion-icon>
+        <ion-label>Log Rides</ion-label>
+      </ion-tab-button>
+
+      <ion-tab-button mode="ios"></ion-tab-button> <!--Blank Space For Home Button-->
+
+      <ion-tab-button [routerLink]="'/database'" routerDirection="back">
+        <ion-icon name="book"></ion-icon>
+        <ion-label>Database</ion-label>
+      </ion-tab-button>
+
+      <ion-tab-button tab="navigate" [routerLink]="'/navigate'" routerDirection="forward">
+        <ion-icon name="compass"></ion-icon>
+        <ion-label>Navigate</ion-label>
+      </ion-tab-button>
+    </ion-tab-bar>
+  </ion-tabs>
+</ion-toolbar>

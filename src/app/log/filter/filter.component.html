@@ -1,0 +1,158 @@
+<!-- coaster-filter.page.html -->
+
+<ion-header>
+  <ion-toolbar color="light">
+    <ion-buttons slot="start" style="padding-left: 0px; padding-top: 10px">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close-sharp" size="large"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      Filter Credits
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Speed Range Filter -->
+  <ion-item class="item-range">
+    <ion-label position="stacked" style="font-size: 20px; font-weight: bold; padding-bottom: 10px;">Speed Range ({{this.mainService.settings.units == "imperial" ? 'mph' : 'km/h'}})</ion-label>
+    <ion-range min="0" [max]="topSpeed" step="1" [dualKnobs]="true" [pin]="true" [(ngModel)]="this.filters.speedRange"></ion-range>
+  </ion-item>
+
+  <!-- Height Range Filter -->
+  <ion-item>
+    <ion-label position="stacked" style="font-size: 20px; font-weight: bold; padding-bottom: 10px;">Height Range ({{this.mainService.settings.units == "imperial" ? 'ft' : 'm'}})</ion-label>
+    <ion-range min="0" [max]="topHeight" step="1" [dualKnobs]="true" [pin]="true" [(ngModel)]="this.filters.heightRange"></ion-range>
+  </ion-item>
+
+  <!-- Length Range Filter -->
+  <ion-item>
+    <ion-label position="stacked" style="font-size: 20px; font-weight: bold; padding-bottom: 10px;">Length Range ({{this.mainService.settings.units == "imperial" ? 'ft' : 'm'}})</ion-label>
+    <ion-range min="0" [max]="topLength" step="10" [dualKnobs]="true" [pin]="true" [(ngModel)]="this.filters.lengthRange"></ion-range>
+  </ion-item>
+
+  <!-- Inversions Filter -->
+  <ion-item>
+    <ion-label position="stacked" style="font-size: 20px; font-weight: bold; padding-bottom: 10px;">Inversions Range</ion-label>
+    <ion-range min="0" max="14" step="1" [ticks]="true" [snaps]="true" [dualKnobs]="true" [pin]="true" [(ngModel)]="this.filters.inversionRange"></ion-range>
+  </ion-item>
+
+    <!-- Popularity Filter -->
+    <ion-item>
+      <ion-label position="stacked" style="font-size: 20px; font-weight: bold; padding-bottom: 10px;">Popularity Range (%)</ion-label>
+      <ion-range min="0" max="100" step="1" [dualKnobs]="true" [pin]="true" [(ngModel)]="this.filters.popularityRange"></ion-range>
+    </ion-item>
+
+  <!-- Tally Filter -->
+  <ion-item>
+    <ion-label position="stacked" style="font-size: 20px; font-weight: bold; padding-bottom: 12px;">Tally Range</ion-label>
+    <ion-chip style="width: 90vw; height: 5.5vh; font-size: 20px;">
+      <ion-thumbnail>
+        <ion-checkbox [value]="this.filters.keepEmptyTallys"></ion-checkbox>
+      </ion-thumbnail>
+      <ion-text style="display: flex; justify-content: center; align-items: center;">Keep empty tallied credits</ion-text>
+    </ion-chip>
+    <ion-range min="0" max="{{this.maxTally}}" step="1" [dualKnobs]="true" [pin]="true" [(ngModel)]="this.filters.tallyRange"></ion-range>
+  </ion-item>
+
+  <!-- Timeframe Filter -->
+  <ion-item>
+    <ion-label position="stacked" style="font-size: 20px; font-weight: bold; padding-bottom: 4px;">Date Opened Range</ion-label>
+    <ion-chip style="width: 90vw; height: 5.5vh; font-size: 20px; ">
+      <ion-thumbnail>
+        <ion-checkbox [value]="this.filters.keepEmptyDates"></ion-checkbox>
+      </ion-thumbnail>
+      <ion-text style="display: flex; justify-content: center; align-items: center;">Keep empty dated credits</ion-text>
+    </ion-chip>
+    <ion-text style="font-size: 18px; padding-top: 12px;">From:</ion-text>
+    <ion-datetime display-format="M/D/YYYY" picker-format="MM/DD/YYYY h:mm A" [value]="this.filters.dateRange.lower"></ion-datetime>
+    <br>
+    <ion-text style="font-size: 18px;">To:</ion-text>
+    <ion-datetime display-format="M/D/YYYY" picker-format="MM/DD/YYYY h:mm A" [value]="this.filters.dateRange.upper"></ion-datetime>
+  </ion-item>
+
+  <!-- Material Type Checkboxes -->
+  <ion-item>
+    <ion-label position="stacked" style="font-size: 20px; font-weight: bold; padding-bottom: 10px;">Material Type</ion-label>
+    <ion-text>Include:</ion-text>
+    <ion-item style="width:fit-content; border-radius:15px;">
+      <ion-thumbnail style="padding-top:4px;">
+        <ion-checkbox [value]="this.filters.materialsOptions.wood"></ion-checkbox>
+      </ion-thumbnail>
+      <ion-text style="font-size: 18px; display: flex; justify-content: center; align-items: center; padding-right: 4px;">Wood</ion-text>
+    </ion-item>
+    <ion-item style="width:fit-content; border-radius:15px;">
+      <ion-thumbnail>
+        <ion-checkbox [value]="this.filters.materialsOptions.steel"></ion-checkbox>
+      </ion-thumbnail>
+      <ion-text style="font-size: 18px; display: flex; justify-content: center; align-items: center; padding-right: 4px;">Steel</ion-text>
+    </ion-item>   
+    <ion-item style="width:fit-content; border-radius:15px;">
+      <ion-thumbnail>
+        <ion-checkbox [value]="this.filters.materialsOptions.hybrid"></ion-checkbox>
+      </ion-thumbnail>
+      <ion-text style="font-size: 18px; display: flex; justify-content: center; align-items: center; padding-right: 4px;">Hybrid</ion-text>
+    </ion-item>
+  </ion-item>
+
+    <!-- Defunct Checkboxes -->
+    <ion-item>
+      <ion-label position="stacked" style="font-size: 20px; font-weight: bold; padding-bottom: 10px; padding-right: 4px;">Status</ion-label>
+      <ion-text>Include:</ion-text>
+      <ion-item style="width:fit-content; border-radius:15px;">
+        <ion-thumbnail>
+          <ion-checkbox [value]="this.filters.statusesOptions.defunct"></ion-checkbox>
+        </ion-thumbnail>
+        <ion-text style="font-size: 18px; display: flex; justify-content: center; align-items: center; padding-right: 4px;">Defunct</ion-text>
+      </ion-item>
+      <ion-item style="width:fit-content; border-radius:15px;">
+        <ion-thumbnail>
+          <ion-checkbox [value]="this.filters.statusesOptions.standing"></ion-checkbox>
+        </ion-thumbnail>
+        <ion-text style="font-size: 18px; display: flex; justify-content: center; align-items: center; padding-right: 4px;">Standing</ion-text>
+      </ion-item>   
+      <ion-item style="width:fit-content; border-radius:15px;">
+        <ion-thumbnail>
+          <ion-checkbox [value]="this.filters.statusesOptions.operating"></ion-checkbox>
+        </ion-thumbnail>
+        <ion-text style="font-size: 18px; display: flex; justify-content: center; align-items: center;">Operating</ion-text>
+      </ion-item>
+    </ion-item>
+    
+    <ion-item>
+      <ion-label position="stacked" style="font-size: 20px; font-weight: bold;">Include Parks</ion-label>
+      <ion-select interface="alert" [multiple]="true" [interfaceOptions]="{header: 'Parks'}" style="width: 100vw;" [(ngModel)]="this.filters.parks"> 
+        <ion-select-option *ngFor="let park of parks">{{park}}</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-label position="stacked" style="font-size: 20px; font-weight: bold;">Include Manufacturers</ion-label>
+      <ion-select interface="alert" [multiple]="true" [interfaceOptions]="{header: 'Manufacturers'}" style="width: 100vw;" [(ngModel)]="this.filters.manufacturers"> 
+        <ion-select-option *ngFor="let man of manufacturers">{{man}}</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-label position="stacked" style="font-size: 20px; font-weight: bold;">Include Models</ion-label>
+      <ion-select interface="alert" [multiple]="true" [interfaceOptions]="{header: 'Models'}" style="width: 100vw;" [(ngModel)]="this.filters.models"> 
+        <ion-select-option *ngFor="let model of models">{{model}}</ion-select-option>
+      </ion-select>
+    </ion-item>
+</ion-content>
+
+<ion-toolbar style="width: 100%; height: 12vh; background-color: transparent">
+  <!-- Apply and Clear Buttons -->
+  <ion-button expand="full" color="primary" style="height: 5vh;" (click)="submit()">
+    <ion-text style="font-size: 2vh;">
+      Apply Filters
+    </ion-text>
+  </ion-button>
+  <ion-button expand="full" color="danger" style="height: 5vh;" (click)="clearFilters()">
+    <ion-text style="font-size: 2vh;">
+      Clear Filters
+    </ion-text>
+  </ion-button>
+</ion-toolbar>
+
+
+

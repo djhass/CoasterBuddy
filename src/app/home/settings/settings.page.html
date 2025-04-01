@@ -1,0 +1,67 @@
+<ion-header style="background-color: var(--ion-background-color)">
+  <ion-toolbar style="background-color: transparent">
+    <ion-buttons slot="start" style="background-color: transparent">
+        <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title style="font-size:24px;">Settings</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item style="height: 60px; padding-top:2px;" lines="none">
+    <ion-icon name="contrast" slot="start"></ion-icon>
+    <ion-label>Appearance</ion-label>
+    <div>
+      <ion-button color="{{(mainService.settings.appearance == 'light') ? 'primary' : 'light'}}" (click)="mainService.setDarkMode('light')">Light</ion-button>
+      <ion-button color="{{(mainService.settings.appearance == 'dark') ? 'primary' : 'light'}}" (click)="mainService.setDarkMode('dark')">Dark</ion-button>
+      <ion-button color="{{(mainService.settings.appearance == 'system') ? 'primary' : 'light'}}" (click)="mainService.setDarkMode('system')">System</ion-button>
+    </div>
+  </ion-item>
+  <ion-item style="height: 60px;" lines="none">
+    <ion-icon src="./assets/icon/ios-ruler.svg" slot="start"></ion-icon>
+    <ion-label>Units</ion-label>
+    <div>
+      <ion-button color="{{(mainService.settings.units == 'metric') ? 'primary' : 'light'}}" (click)="mainService.setUnits('metric')">Metric</ion-button>
+      <ion-button color="{{(mainService.settings.units == 'imperial') ? 'primary' : 'light'}}" (click)="mainService.setUnits('imperial')">Imperial</ion-button>
+    </div>
+  </ion-item>
+  <ion-item style="height: 60px; " lines="none">
+    <ion-icon name="trash" slot="start"></ion-icon>
+    <ion-label>Delete All Data</ion-label>
+    <div>
+      <ion-button color="danger" (click)="clearData()">Delete</ion-button>
+    </div>
+  </ion-item>
+
+    <ion-card>
+      <ion-card-title style="height: 60px;">
+        <ion-title style="font-size: 20px;">
+          Backups
+        </ion-title>
+      </ion-card-title>
+      <ion-card-content>
+        <ion-list *ngFor="let log of coastersService.history; let i=index;" style="background-color: transparent">
+          <ion-item (click)="openViewListComponent(i)" color="transparent">
+            <ion-grid>
+              <ion-row>
+                <ion-text style="width: 85vw; font-weight: bold; font-size: 20px;">
+                  {{this.timeAgo(coastersService.history[i]?.date)}}
+                </ion-text>
+              </ion-row>
+              <ion-row>
+                <ion-text *ngIf="coastersService.history[i].credits[0]">
+                  {{coastersService.history[i].credits[0].name ?? ""}}
+                </ion-text>
+              </ion-row>
+              <ion-row>
+                <ion-text *ngIf="coastersService?.history?.[i]">
+                  {{coastersService?.history?.[i]?.credits?.length ?? 0}}
+                </ion-text>
+              </ion-row>
+            </ion-grid>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+</ion-content>

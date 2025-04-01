@@ -1,0 +1,28 @@
+<ion-header>
+  <ion-toolbar color="light">
+
+    
+
+ <ion-buttons  slot="start" style="padding-left: 0px; padding-top: 10px">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close-sharp"  size="large"></ion-icon>
+      </ion-button>
+      
+    </ion-buttons>
+
+    <ion-buttons slot="end" style="padding-right: 15px; padding-top: 5px">
+      <ion-button [hidden]="this.selectOption || coasterInput == []" (click)="this.selectOption = true" fill="clear">Select</ion-button>
+      <ion-button  [hidden]="!this.selectOption" (click)="this.selectOption = false; clearSelected()" fill="clear">Cancel</ion-button>
+    </ion-buttons>
+
+    <ion-item [hidden]="coasterInput == []" style="position: absolute; top: 0px; right: 26%; width: 200px;" color="transparent" (click)="searchItems(coasterInput)">
+      <ion-chip style="width: 95%" color="primary">
+        <ion-checkbox color="tertiary" [(ngModel)]="showDefunct"></ion-checkbox>
+        <ion-text color="dark">Show Defunct</ion-text>
+      </ion-chip>
+    </ion-item>
+
+
+
+</ion-toolbar>
+</ion-header>  

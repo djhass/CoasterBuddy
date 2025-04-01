@@ -1,0 +1,32 @@
+ion-range {
+--knob-size: 5.924vh; 
+--knob-background: transparent;
+--knob-box-shadow: 0px;
+--bar-height: 2.8436vh;
+padding-top: 6.5166vh;
+pointer-events: none;
+radius: 0.5924vh;
+}
+  
+  ion-range::part(pin) {
+  
+    border-radius: 50%;
+    transform: scale(1.01);
+  
+    min-width: 5.924vh;
+    height: 5.924vh;
+
+    font-size: 3.555vh;
+
+
+  }
+
+  ion-range::part(pin)::after {
+    content: "%";
+  }
+  
+
+  
+
+  
+  

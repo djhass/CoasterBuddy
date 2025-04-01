@@ -1,0 +1,100 @@
+<ion-header>
+  <ion-toolbar>
+
+    <ion-searchbar (keypress)="closeKeyboard($event.keyCode)" enterkeyhint = "done" [(ngModel)]="this.coasterSearch" debounce = "500" (ionFocus)="clearFab()" (ionBlur)="showFab()" placeholder="Coaster Name"></ion-searchbar>
+    <ion-searchbar (keypress)="closeKeyboard($event.keyCode)" enterkeyhint = "done" [(ngModel)]="this.parkSearch" debounce = "500" (ionFocus)="clearFab()" (ionBlur)="showFab()" placeholder="Park"></ion-searchbar>
+    <ion-searchbar (keypress)="closeKeyboard($event.keyCode)" enterkeyhint = "done" [(ngModel)]="this.manufacturerSearch" debounce = "500" (ionFocus)="clearFab()" (ionBlur)="showFab()" placeholder="Manufacturer"></ion-searchbar>
+
+    <ion-chip style="width: 31%; background: {{ this.operating == 'all' ? 'var(--ion-color-tertiary)' : 'var(--ion-color-light)' }}" ><ion-label color="dark" style="padding-left: 35%; font-size: 20px;" (click)="this.operating = 'all'">All</ion-label></ion-chip>
+    <ion-chip style="width: 31%; background: {{ this.operating == 'operating' ? 'var(--ion-color-tertiary)' : 'var(--ion-color-light)' }}" ><ion-label style="padding-left: 4%; font-size: 20px;" (click)="this.operating = 'operating'">Operating</ion-label></ion-chip>
+    <ion-chip style="width: 31%; background: {{ this.operating == 'closed' ? 'var(--ion-color-tertiary)' : 'var(--ion-color-light)' }}" ><ion-label style="padding-left: 15%; font-size: 20px;" (click)="this.operating = 'closed'">Closed</ion-label></ion-chip>
+    <ion-button type="submit" (click)="searchDatabase(this.coasterSearch, this.parkSearch, this.manufacturerSearch)" style="width: 99%; padding-top: 12px" color="tertiary">Search</ion-button>
+  </ion-toolbar>
+</ion-header>
+
+
+
+  <ion-content overflow-scroll="true">
+      <ion-list style="background: transparent; padding-left: 8px;">
+            
+            <ion-item *ngFor="let coaster of database; let indexOfelement=index;" style="padding-top: 8px; padding-bottom: 8px; border-radius: 30px;" [routerLink]="['./coaster', coaster.id]">
+              <ion-avatar slot="start">
+                <ion-thumbnail>
+                  <ion-img [src] = "coastersService.getCoasterSmallImage(coaster?.mainImage)">
+
+                  </ion-img>
+                </ion-thumbnail>
+              </ion-avatar>
+                <ion-col>
+                  <ion-row>
+                    <ion-label style="font-size: 18px; font-style: bold;" > 
+                       {{coaster?.name}}
+                    </ion-label>
+                    </ion-row>
+                    <ion-row>
+                      <ion-label class="ion-text-wrap" style="font-size: 15px;" color="medium"> {{ coaster?.park?.name }}</ion-label>
+                    </ion-row>
+                    <ion-row>
+                      <ion-label class="ion-text-wrap" style="font-size: 15px;" color="medium"> {{ coaster?.manufacturer?.name }}</ion-label>
+                    </ion-row>
+                </ion-col>
+            </ion-item>
+      </ion-list>
+
+      <ion-card [hidden]="this.database">
+        <ion-card-header style="height: 1%;">
+            <ion-icon style="position: absolute; right: 87.5%; top: 15%;" name="refresh-outline" color="dark" size="large" (click)="getRandomCoaster()"></ion-icon>
+            <p align="center" style="font-size: 24px; font-weight: bold;">Random Coaster: </p>
+            <ion-icon style="position: absolute; left: 87.5%; top: 15%;" [routerLink]="['./coaster', randomCoaster?.id]" name="information-circle-outline" color="dark" size="large"></ion-icon>
+          
+          
+          
+        </ion-card-header>
+        <ion-card-content>
+          <img [src]="coastersService.getCoasterLargeImage(this.randomCoaster?.mainImage)" style="display: block; margin: 0 auto;"/>
+          <p align="center" style="font-size:24px; overflow:hidden; text-overflow: ellipsis; white-space: nowrap; font-weight:bold; padding-top: 6px;">{{this.randomCoaster?.name}}</p>
+          <p align="center" style="font-size:18px; overflow:hidden; text-overflow: ellipsis; white-space: nowrap;">{{this.randomCoaster?.park?.name}}</p>
+          <p align="center" style="font-size:18px; overflow:hidden; text-overflow: ellipsis; white-space: nowrap;">{{this.randomCoaster?.manufacturer?.name}}</p>
+        </ion-card-content>
+      </ion-card>
+
+</ion-content>
+
+<!--Home Button-->
+<ion-fab [hidden]="fabHidden" vertical="bottom" horizontal="center" slot="fixed" style="height: 8vh">
+  <ion-fab-button [routerLink]="'/home'" routerDirection="back" color="medium">
+    <ion-icon style="color: white;" name="home"></ion-icon>
+  </ion-fab-button>
+</ion-fab>
+
+  <ion-toolbar style="width: 100%; height: 7.82vh;" >
+    <ion-tabs>
+      <ion-tab-bar style="min-height: 45px; padding-bottom: 12px;" slot="bottom" selected-tab="database" > 
+
+        <ion-tab-button [routerLink]="'/times'" routerDirection="back">
+          <ion-icon name="stopwatch"></ion-icon>
+          <ion-label>Wait Times</ion-label>
+        </ion-tab-button>
+
+        <ion-tab-button [routerLink]="'/log'" routerDirection="back">
+          <ion-icon name="clipboard"></ion-icon>
+          <ion-label>Log Rides</ion-label>
+        </ion-tab-button>
+
+        <ion-tab-button mode="ios"></ion-tab-button> <!--Blank Space For Home Button-->
+
+        <ion-tab-button tab="database" [routerLink]="'/database'" routerDirection="forward">
+          <ion-icon name="book"></ion-icon>
+          <ion-label>Database</ion-label>
+        </ion-tab-button>
+
+        <ion-tab-button [routerLink]="'/navigate'" routerDirection="forward">
+          <ion-icon name="compass"></ion-icon>
+          <ion-label>Navigate</ion-label>
+        </ion-tab-button>
+
+      </ion-tab-bar>
+    </ion-tabs>
+    
+  </ion-toolbar>
+

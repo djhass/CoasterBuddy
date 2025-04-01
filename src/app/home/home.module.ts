@@ -3,8 +3,12 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { HomePage } from './home.page';
-
+import { AddComponent } from '../add/add.component';
+import { StatsComponent } from '../stats/stats.component';
 import { HomePageRoutingModule } from './home-routing.module';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { RouterModule } from '@angular/router';
+
 
 
 @NgModule({
@@ -12,8 +16,14 @@ import { HomePageRoutingModule } from './home-routing.module';
     CommonModule,
     FormsModule,
     IonicModule,
-    HomePageRoutingModule
+    HomePageRoutingModule,
+    StatsComponent,
+    AddComponent,
+    HomePage,
+    RouterModule
   ],
-  declarations: [HomePage]
+  schemas: [
+    CUSTOM_ELEMENTS_SCHEMA
+  ]
 })
 export class HomePageModule {}

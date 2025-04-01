@@ -1,0 +1,231 @@
+<ion-header >
+  <ion-toolbar  style="padding-bottom:4px;">
+    <ion-title> 
+      <p align="center" style="padding-top: 10px; font-style: bold; font-size: 30px;" >
+        <ion-text *ngIf="!(!this.coastersService.displayCreditList || this.coastersService.displayCreditList.length == this.coastersService.credit_list.length)">
+          {{coastersService?.displayCreditList?.length}} /
+        </ion-text>
+        {{coastersService?.credit_list?.length}}
+      </p>
+    </ion-title>
+    <ion-buttons class="settings" slot="end" style="padding-right: 2.5vw; padding-top: 10px;" *ngIf="!(this.mainService?.filters?.appliedFilters)">
+      <ion-button *ngIf="(list_select != 'Coasters' || sort_select != 'rank' || this.edit)" (click)="startEdit()" fill="clear" color="dark">Edit</ion-button>
+      <ion-button *ngIf="this.edit" (click)="stopEdit()" fill="clear" color="dark">Done</ion-button>
+    </ion-buttons>
+    <ion-buttons class="settings" slot="start" style="padding-left: 2.5vw; padding-top: 10px; font-color: black" *ngIf="!(this.mainService?.filters?.appliedFilters || list_select != 'Coasters' || sort_select != 'rank')">
+      <ion-button (click)="sortPrompt()" color="dark">Rank</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-router-outlet id="main"></ion-router-outlet>
+
+<ion-content fullscreen="true" >
+  <ion-header collapse="condense" >
+    <ion-toolbar >
+      <ion-title> 
+        <p align="center" style="font-style: bold; font-size: 45px; padding-bottom: 9px;">
+          <ion-text *ngIf="!(!this.coastersService.displayCreditList || this.coastersService.displayCreditList.length == this.coastersService.credit_list.length)">
+            {{coastersService?.displayCreditList?.length}} /
+          </ion-text>
+          {{coastersService?.credit_list?.length}}
+        </p>
+      </ion-title>
+    </ion-toolbar>
+    <ion-toolbar style="padding-bottom: 4px;">
+      <ion-button (click)="toggleSearchbar()" style="position: absolute; left: 16px; top:-.65vh; height: 5vh; width: 5vh;" color="transparent" *ngIf="!(list_select != 'Coasters' || sort_select != 'rank' || mainService.filters?.appliedFilters || this.edit)">
+        <ion-icon name="search" size="large" color="{{ this.showSearchbar ? 'primary' : 'dark' }}" style="height: 3.5vh; position: absolute"></ion-icon>
+      </ion-button>
+      <ion-button (click)="openFilterComponent()" style="position: absolute; right: 112px; top:-.65vh; height: 5vh; width: 5vh;" color="transparent" *ngIf="!(list_select != 'Coasters' || this.edit)">
+        <ion-icon name="options" size="large" style="height: 3.5vh; position: absolute;" color="{{ this.mainService.filters?.appliedFilters ? 'primary' : 'dark' }}"></ion-icon>
+      </ion-button>
+      <ion-button style="position: absolute; right: 64px; top:-.65vh; height: 5vh; width: 5vh;" color="transparent" *ngIf="!(list_select != 'Coasters' || this.edit)">
+        <ion-icon src="./assets/icon/up-down.svg" size="large" color="{{ this.sort_select == 'rank' ? 'dark' : 'primary' }}" style="height: 3.5vh; position: absolute;"></ion-icon>
+        <ion-select interface="alert" [interfaceOptions]="{header: 'Sort By'}" style="opacity:0" (ionChange)="this.sortBy(); this.edit = false" [value]="sort_select" *ngIf="!(list_select != 'Coasters')" slot="end"> 
+          <ion-select-option value="rank">Rank</ion-select-option>
+          <ion-select-option value="height">Height</ion-select-option>
+          <ion-select-option value="length">Length</ion-select-option>
+          <ion-select-option value="speed">Speed</ion-select-option>
+          <ion-select-option value="score">Popularity</ion-select-option>
+          <ion-select-option value="time">Time</ion-select-option>
+          <ion-select-option value="tally">Tally</ion-select-option>
+          <ion-select-option value="inversionsNumber">Inversions</ion-select-option>
+
+        </ion-select>
+      </ion-button>
+      <ion-button style="position: absolute; right: 16px; top:-.65vh; height: 5vh; width: 5vh;" color="transparent" *ngIf="!(sort_select != 'rank' || this.edit || this.mainService.filters?.appliedFilters)">
+        <ion-icon name="list" size="large" color="{{ this.list_select == 'Coasters' ? 'dark' : 'primary' }}" style="height: 3.5vh; position: absolute;"></ion-icon>
+        <ion-select interface="alert" [interfaceOptions]="{header: 'Display'}" style="opacity:0" (ionFocus)="this.sort_select = 'rank'" (ionChange)="this.edit = false;" [value]="list_select">
+          <ion-select-option>Coasters</ion-select-option>
+          <ion-select-option>Parks</ion-select-option>
+          <ion-select-option>Manufacturers</ion-select-option>
+        </ion-select>
+      </ion-button>
+      
+      
+      
+    </ion-toolbar>
+    <ion-item *ngIf="this.showSearchbar" id="searchToolbar" lines="none">
+      <ion-searchbar (ionFocus)="hideFab()" (ionBlur)="onSearch($event); showFab();" (keyup.enter)="onSearch($event)" (keypress)="mainService.closeKeyboard($event.keyCode)" inputmode = "search" animated placeholder="Find" debounce = "025"></ion-searchbar>
+    </ion-item>
+  </ion-header>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" style="padding-bottom: 16px; padding-right: 10px; " *ngIf="!(list_select != 'Coasters' || sort_select != 'rank' || mainService.filters?.appliedFilters || this.edit || !this.displayFab)">
+    <ion-fab-button (click)="openAddComponent()" expand="full" style="width: 62px; height: 62px;">
+      <ion-icon name="add" style="width: 38px; height: 38px;"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <ion-list *ngIf="list_select == 'Coasters' && sort_select == 'rank'" style="background: transparent; padding-bottom: 100px;">
+    <ion-reorder-group (ionItemReorder)="reorderItems($event) " [disabled]="false">
+      <ion-item-sliding *ngFor="let credit of coastersService.displayCreditList; let indexOfelement=index;" fill="outline">
+        <ion-item-options side="end">
+          <ion-item-option color="danger" (click)="onDeleteCoaster(indexOfelement)">
+            <ion-icon name="trash-outline" size="large" style="padding: 5px;" ></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+        <ion-item-options side="start">
+          <ion-item-option style="background-color: blue" (click)="openEditComponent(credit)">
+            <ion-icon name="pencil-outline" size="large" style="padding-left: 0px;" ></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+        <ion-item [routerLink]="this.edit ? null : './credit/' + credit.id" detail="false">
+          <ion-avatar>
+            <ion-thumbnail size="small" style="padding-left: 2px;" *ngIf = "!this.edit">
+              <ion-label style="font-size: 22px; padding-top: 4px; font-weight: 600;" color="dark"> {{ indexOfelement + 1}}</ion-label>
+            </ion-thumbnail>
+            <ion-thumbnail size="small" style="padding-left: 16px; padding-right: 8px;" *ngIf = "this.edit" style="padding-left: 8px;" (click)="$event.stopPropagation(); addToSelectedList(credit)">
+              <ion-checkbox #checkboxElement></ion-checkbox>
+            </ion-thumbnail>
+          </ion-avatar>
+            <ion-col>
+              <ion-row>
+                <ion-label class="ion-text-wrap" style="font-size: 18px; font-weight: 600;" #itemElement> 
+                  {{ credit?.name }} 
+                </ion-label>
+              </ion-row>
+              <ion-row>
+                <ion-label class="ion-text-wrap" style="font-size: 15px; overflow:hidden; font-weight: 600" color="medium"> {{ credit?.park?.name }}</ion-label>
+              </ion-row>
+            </ion-col>
+            <ion-buttons *ngIf="this.edit">
+              <ion-button (click)="$event.preventDefault();$event.stopPropagation();openEditComponent(credit);">
+                <ion-icon name="pencil-outline" slot="icon-only" style="color: grey"></ion-icon>
+              </ion-button>
+              <ion-button (click)="$event.preventDefault();$event.stopPropagation();onDeleteCoaster(credit.id);">
+                <ion-icon name="trash" slot="icon-only" style="color: grey"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+          <ion-reorder *ngIf="this.edit" slot="end"></ion-reorder>
+        </ion-item>
+      </ion-item-sliding>
+    </ion-reorder-group>
+  </ion-list>
+  <ion-list *ngIf="list_select == 'Parks'" class="parksList">
+    <ion-item *ngFor="let Park of coastersService.parksInCredits()" [routerLink]="['./park/', Park]" detail="false">
+        <ion-col>
+          <ion-row>
+            <ion-label style="font-size: 18px; font-style: bold;"> 
+               {{ Park }} 
+            </ion-label>
+          </ion-row>
+        </ion-col>
+        <ion-badge slot="end">
+          <ion-label style="font-size: 16px;"> {{ this.creditsInPark(Park) }}</ion-label>
+        </ion-badge>
+      </ion-item>
+  </ion-list>
+  <ion-list *ngIf="list_select == 'Manufacturers'">
+    <ion-item *ngFor="let man of coastersService.manufacturersInCredits()" [routerLink]="['./manufacturer/', man]" detail="false">
+      <ion-col>
+        <ion-row>
+          <ion-label style="font-size: 18px; font-style: bold;"> 
+            {{ man }} 
+          </ion-label>
+        </ion-row>
+      </ion-col>
+      <ion-badge slot="end">
+        <ion-label style="font-size: 16px;" [routerLink]="['./park/', man]"> {{ this.creditsInMan(man) }}</ion-label>
+      </ion-badge>
+    </ion-item>
+  </ion-list>
+  <ion-list *ngIf="!(list_select != 'Coasters' || sort_select == 'rank')">
+    <ion-item *ngFor="let coaster of coastersService.displayCreditList;" [routerLink] ="['./credit', coaster.id]" detail="false" style="padding-bottom:4px;">
+      <ion-thumbnail style="width:fit-content; padding-right: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center;" *ngIf="(sort_select == 'height') || (sort_select == 'score') || (sort_select == 'tally') || (sort_select == 'inversionsNumber')">
+        <ion-label style="font-size: 18px; font-weight: bold" *ngIf="sort_select == 'score'"> {{ Math.round(coaster?.score) }}%</ion-label>
+        <ion-label style="font-size: 18px; font-weight: bold" *ngIf="sort_select == 'tally'"> {{ coaster?.tally}}</ion-label>
+        <ion-label style="font-size: 18px; font-weight: bold" *ngIf="sort_select == 'inversionsNumber'"> {{ coaster?.inversionsNumber}}</ion-label>
+      </ion-thumbnail>
+        <ion-col>
+          <ion-row>
+            <ion-label style="font-size: 18px; font-style: bold;"> 
+               {{ coaster?.name }}
+            </ion-label>
+          </ion-row>
+          <ion-row>
+            <ion-label style="font-size: 15px;" color="medium"> {{ coaster?.park?.name }} </ion-label>
+          </ion-row>
+          <ion-row>
+            <ion-datetime style="font-size: 15px; font-weight: bold;" *ngIf="sort_select == 'time'" [value]="coaster.time" disabled="true" ></ion-datetime>
+            <ion-label style="font-size: 18px; font-weight: bold;" *ngIf="sort_select == 'length'"> {{ Math.round(coaster.length * (this.mainService.settings.units == "imperial" ? 3.280839895 : 1)) }} <ion-text *ngIf="this.mainService.settings.units == 'imperial'"> ft</ion-text><ion-text *ngIf="this.mainService.settings.units == 'metric'"> m</ion-text></ion-label>
+            <ion-label style="font-size: 18px; font-weight: bold" *ngIf="sort_select == 'height'"> {{ Math.round(coaster.height * (this.mainService.settings.units == "imperial" ? 3.280839895 : 1)) }} <ion-text *ngIf="this.mainService.settings.units == 'imperial'"> ft</ion-text><ion-text *ngIf="this.mainService.settings.units == 'metric'"> m</ion-text></ion-label>
+            <ion-label style="font-size: 18px; font-weight: bold;" *ngIf="sort_select == 'speed'"> {{ Math.round(coaster.speed * (this.mainService.settings.units == "imperial" ? 0.621371 : 1)) }} <ion-text *ngIf="this.mainService.settings.units == 'imperial'"> mph</ion-text><ion-text *ngIf="this.mainService.settings.units == 'metric'"> m/s</ion-text></ion-label>
+          </ion-row>
+        </ion-col>
+      </ion-item>
+  </ion-list>
+</ion-content>
+
+<!--Home Button-->
+<ion-fab vertical="bottom" horizontal="center" slot="fixed" style="height: 8vh" *ngIf="!(this.edit || !this.displayFab)">
+  <ion-fab-button [routerLink]="'/home'" routerDirection="forward" color="medium">
+    <ion-icon style="color: white;" name="home"></ion-icon>
+  </ion-fab-button>
+</ion-fab>
+
+  <ion-toolbar style="width: 100%; height: 7.82vh;" *ngIf="!this.edit">
+    <ion-tabs color="tertiary">
+      <ion-tab-bar style="min-height: 45px; padding-bottom: 12px;" slot="bottom" selected-tab="log"> 
+
+        <ion-tab-button [routerLink]="'/times'" routerDirection="back">
+          <ion-icon name="stopwatch"></ion-icon>
+          <ion-label>Wait Times</ion-label>
+        </ion-tab-button>
+
+        <ion-tab-button tab="log" [routerLink]="'/log'" routerDirection="forward">
+          <ion-icon name="clipboard"></ion-icon>
+          <ion-label>Log Rides</ion-label>
+        </ion-tab-button>
+
+        <ion-tab-button mode="ios"></ion-tab-button> <!--Blank Space For Home Button-->
+
+        <ion-tab-button [routerLink]="'/database'" routerDirection="forward">
+          <ion-icon name="book"></ion-icon>
+          <ion-label>Database</ion-label>
+        </ion-tab-button>
+
+        <ion-tab-button [routerLink]="'/navigate'" routerDirection="forward">
+          <ion-icon name="compass"></ion-icon>
+          <ion-label>Navigate</ion-label>
+        </ion-tab-button>
+
+      </ion-tab-bar>
+    </ion-tabs>
+    
+  </ion-toolbar>
+
+  <ion-toolbar *ngIf="this.edit">
+    <h1 class="ion-text-center" style="padding-top: 5px; font-style: bold; font-size: 30px;" >
+      {{"Selected: " + selectedList.length }}
+    </h1>
+    <ion-buttons slot="end">
+      <ion-button id="changeText" (click)="deleteInSelectedList()">
+        <ion-icon slot="start" name="trash" style="height: 35px; width: 35px;"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons  slot="start" style="padding-left: 0px; padding-top: 10px">
+      <ion-button (click)="clearSelectedList()">
+        Clear
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>

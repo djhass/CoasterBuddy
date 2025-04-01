@@ -1,0 +1,15 @@
+#map {
+    width: 100%;
+    height: 50vh;
+  }
+  
+  img {
+      height: auto;
+      max-width: 100%;
+  }
+  
+  #map_canvas img{max-width:none}
+
+ion-tab-button.tab-selected {
+    --color-selected: var(--ion-color-tertiary)
+  }

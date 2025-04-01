@@ -1,0 +1,110 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+        <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>Queue Times</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-title  style="font-size: 14px; font-weight: 100;"> <p  align="center">
+      <a color="tertiary" href="https://queue-times.com/">Powered by Queue-Times.com</a>
+    </p>
+  </ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-spinner [hidden]="!loading" style="left: 35vw; top: 20vh; width: 30vw"></ion-spinner>
+  <ion-refresher slot="fixed" (ionRefresh)="refreshed($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+  <div [hidden]="returnedValue">
+    <h1 style="text-align:center; font-style: bold">
+      Missing Information?
+    </h1>
+    <h5 style="text-align:center;">
+      This park may not currently be publishing full wait time information
+    </h5>
+    <ion-card>
+      <ion-card-title>
+        <p align="center" style=" padding-top: 5px;  padding-bottom: 5px; font-style: bold; font-size: 25px;" >
+          Rides
+        </p>
+      </ion-card-title>
+      <ion-card-content>
+        <ion-list *ngFor = "let Ride of coasterData" style="background: transparent;">
+          <ion-grid>
+            <ion-row>
+              <ion-col>
+                <ion-text style="font-size: 20px; font-style: bold; padding-left: 0px;" color="dark">
+                  {{ Ride.name }}
+                </ion-text>
+              </ion-col>
+              <ion-col>
+                <ion-text [hidden] = "Ride.is_open" style="font-size: 20px; font-style: bold; float:right; padding-right: 20px" color="danger">
+                  Closed
+                </ion-text>
+                <ion-text [hidden] = "!Ride.is_open || Ride.wait_time != 0" style="font-size: 20px; font-style: bold; float:right; padding-right: 20px" color="success">
+                  Open
+                </ion-text>
+                <ion-text item-end [hidden] = "!Ride.is_open || (Ride.wait_time <= 0)" style="font-size: 20px; font-style: bold; float:right; padding-right: 20px; color: {{ mainService.interpolateIonicColors('success', 'warning', Math.min(1-(Ride.wait_time/100))) }}">
+                  minutes
+                </ion-text>
+                <ion-text item-end [hidden] = "!Ride.is_open || (Ride.wait_time <= 0)" style="font-size: 20px; font-style: bold; float:right; padding-right: 20px; font-weight: 550; color: {{ mainService.interpolateIonicColors('success', 'warning', Math.min(1-(Ride.wait_time/100))) }}">
+                  {{ Ride.wait_time }}
+                </ion-text>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-text style="font-size: 12px; color: grey; font-weight: bold; padding-left: 4px">
+                {{ ISOToReadable(Ride.last_updated) }}
+              </ion-text>
+            </ion-row>
+          </ion-grid>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+  <div [hidden]="!returnedValue">
+    <ion-card *ngFor = "let Section of sectionData" color="light">
+      <ion-card-title>
+        <p align="center" style=" padding-top: 5px;  padding-bottom: 5px; font-style: bold; font-size: 25px;" >
+          {{ Section.name }}
+        </p>
+      </ion-card-title>
+      <ion-card-content>
+        <ion-list *ngFor = "let ride of Section.rides" style="background: transparent;">
+          <ion-grid>
+            <ion-row>
+              <!--<ion-icon name="notifications" style="width:16px;" (click)="notificationMenu(ride)"></ion-icon>-->
+              <ion-col>
+                <ion-text style="font-size: 20px; font-style: bold; padding-left: 0px;" color="dark">
+                  {{ ride.name }}
+                </ion-text>
+              </ion-col>
+              <ion-col>
+                <ion-text [hidden] = "ride.is_open" style="font-size: 20px; font-style: bold; float:right; padding-right: 20px" color="danger">
+                  Closed
+                </ion-text>
+                <ion-text [hidden] = "!ride.is_open || ride.wait_time != 0" style="font-size: 20px; font-style: bold; float:right; padding-right: 20px" color="success">
+                  Open
+                </ion-text>
+                <ion-text item-end [hidden] = "!ride.is_open || (ride.wait_time <= 0)" style="font-size: 20px; font-style: bold; float:right; padding-right: 20px; color: {{ mainService.interpolateIonicColors('success', 'warning', Math.min(1-(ride.wait_time/100))) }}">
+                  minutes
+                </ion-text>
+                <ion-text item-end [hidden] = "!ride.is_open || (ride.wait_time <= 0)" style="font-size: 20px; font-style: bold; float:right; padding-right: 20px; font-weight: 550; color: {{ mainService.interpolateIonicColors('success', 'warning', Math.min(1-(ride.wait_time/100))) }}">
+                  {{ ride.wait_time }}
+                </ion-text>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-text style="font-size: 12px; color: grey; font-weight: bold; padding-left: 4px">
+                {{ ISOToReadable(ride.last_updated) }}
+              </ion-text>
+            </ion-row>
+          </ion-grid>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
+
