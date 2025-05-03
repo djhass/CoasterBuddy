@@ -12,24 +12,48 @@
     <ion-icon name="contrast" slot="start"></ion-icon>
     <ion-label>Appearance</ion-label>
     <div>
-      <ion-button color="{{(mainService.settings.appearance == 'light') ? 'primary' : 'light'}}" (click)="mainService.setDarkMode('light')">Light</ion-button>
-      <ion-button color="{{(mainService.settings.appearance == 'dark') ? 'primary' : 'light'}}" (click)="mainService.setDarkMode('dark')">Dark</ion-button>
-      <ion-button color="{{(mainService.settings.appearance == 'system') ? 'primary' : 'light'}}" (click)="mainService.setDarkMode('system')">System</ion-button>
+      <ion-button style="width:70px; height:26px; font-size: 18px;" color="{{(mainService.settings.appearance == 'light') ? 'primary' : 'light'}}" (click)="mainService.setDarkMode('light')">Light</ion-button>
+      <ion-button style="width:70px; height:26px; font-size: 18px;" color="{{(mainService.settings.appearance == 'dark') ? 'primary' : 'light'}}" (click)="mainService.setDarkMode('dark')">Dark</ion-button>
+      <ion-button style="width:70px; height:26px; font-size: 18px;" color="{{(mainService.settings.appearance == 'system') ? 'primary' : 'light'}}" (click)="mainService.setDarkMode('system')">System</ion-button>
     </div>
   </ion-item>
-  <ion-item style="height: 60px;" lines="none">
+  <ion-item style="height: 60px; padding-top:2px;" lines="none">
+    <ion-icon name="map"></ion-icon>
+    <ion-label>Maps Service</ion-label>
+    <div>
+      <ion-button style="width:70px; height:26px; font-size: 18px;" color="{{(mainService.settings.mapsService == 'google') ? 'primary' : 'light'}}" (click)="mainService.setMapService('google')">Google</ion-button>
+      <ion-button style="width:70px; height:26px; font-size: 18px;" color="{{(mainService.settings.mapsService == 'apple') ? 'primary' : 'light'}}" (click)="mainService.setMapService('apple')">Apple</ion-button>
+      <ion-button style="width:70px; height:26px; font-size: 18px;" color="{{(mainService.settings.mapsService == 'waze') ? 'primary' : 'light'}}" (click)="mainService.setMapService('waze')">Waze</ion-button>
+    </div>
+  </ion-item>
+  <ion-item style="height: 120px; padding-bottom: 10px;" lines="none">
     <ion-icon src="./assets/icon/ios-ruler.svg" slot="start"></ion-icon>
     <ion-label>Units</ion-label>
-    <div>
-      <ion-button color="{{(mainService.settings.units == 'metric') ? 'primary' : 'light'}}" (click)="mainService.setUnits('metric')">Metric</ion-button>
-      <ion-button color="{{(mainService.settings.units == 'imperial') ? 'primary' : 'light'}}" (click)="mainService.setUnits('imperial')">Imperial</ion-button>
-    </div>
+    <ion-grid style="display: flex; flex-direction: column; align-items: center;">
+      <ion-row>
+        <div>
+          <ion-button style="width:85px; height:26px; font-size: 18px;" color="{{(mainService.settings.metric) ? 'primary' : 'light'}}" (click)="mainService.setUnits(true)">Metric</ion-button>
+          <ion-button style="width:85px; height:26px; font-size: 18px;" color="{{(!mainService.settings.metric) ? 'primary' : 'light'}}" (click)="mainService.setUnits(false)">Imperial</ion-button>
+        </div>
+      </ion-row>
+      <ion-row>
+        <ion-chip style="width:180px; height:30px;" (click)="this.mainService.settings.defaultUnits = !this.mainService.settings.defaultUnits">
+          <ion-thumbnail>
+            <ion-checkbox [(ngModel)]="this.mainService.settings.defaultUnits"></ion-checkbox>
+          </ion-thumbnail>
+          <ion-label style="font-size: 18px;">
+            Use Default
+          </ion-label>
+        </ion-chip>
+      </ion-row>
+    </ion-grid>
+
   </ion-item>
-  <ion-item style="height: 60px; " lines="none">
+  <ion-item style="height: 70px; padding-top: 20px; padding-bottom: 20px;" lines="none">
     <ion-icon name="trash" slot="start"></ion-icon>
     <ion-label>Delete All Data</ion-label>
     <div>
-      <ion-button color="danger" (click)="clearData()">Delete</ion-button>
+      <ion-button style="height:30px; font-size: 18px; font-weight: bold" color="danger" (longPress) = "clearData()">Delete (hold)</ion-button>
     </div>
   </ion-item>
 

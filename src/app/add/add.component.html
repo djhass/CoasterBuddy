@@ -1,8 +1,5 @@
 <ion-header>
   <ion-toolbar color="light">
-
-    
-
  <ion-buttons  slot="start" style="padding-left: 0px; padding-top: 10px">
       <ion-button (click)="closeModal()">
         <ion-icon name="close-sharp"  size="large"></ion-icon>
@@ -11,31 +8,21 @@
     </ion-buttons>
 
     <ion-buttons slot="end" style="padding-right: 15px; padding-top: 5px">
-      <ion-button [hidden]="this.selectOption || coasterInput == ''" (click)="this.selectOption = true" fill="clear">Select</ion-button>
-      <ion-button  [hidden]="!this.selectOption" (click)="this.selectOption = false; clearSelected()" fill="clear">Cancel</ion-button>
+      <ion-button *ngIf="!(this.selectOption || coasterInput == '')" (click)="this.selectOption = true" fill="clear">Select</ion-button>
+      <ion-button  *ngIf="this.selectOption" (click)="this.selectOption = false; clearSelected()" fill="clear">Cancel</ion-button>
     </ion-buttons>
-
-    <ion-item [hidden]="coasterInput == ''" style="position: absolute; top: 0px; right: 26%; width: 200px;" color="transparent" (click)="searchItems(coasterInput)">
-      <ion-chip style="width: 95%" color="primary">
-        <ion-checkbox color="tertiary" [(ngModel)]="showDefunct"></ion-checkbox>
-        <ion-text color="dark">Show Defunct</ion-text>
-      </ion-chip>
-    </ion-item>
-
-
-
-</ion-toolbar>
+  </ion-toolbar>
 </ion-header>  
 
-<ion-searchbar (keypress)="mainService.closeKeyboard($event.keyCode)" enterkeyhint = "done" animated placeholder="Search Database" inputmode="text" [(ngModel)]="coasterInput" debounce = "225" (ionChange)="searchItems($event.target.value)" (ionBlur)="this.searchFocus = false" (ionFocus)="this.searchFocus = true">
+<ion-searchbar (keypress)="mainService.closeKeyboard($event.keyCode)" enterkeyhint = "done" animated placeholder="Search Database" inputmode="text" [(ngModel)]="coasterInput" debounce = "225" (ionInput)="searchItems($event.target.value)" (ionBlur)="this.searchFocus = false" (ionFocus)="this.searchFocus = true">
 </ion-searchbar>
 
 
 <ion-content>
-      <ion-list *ngIf="isCoasterAvailable" >
+      <ion-list>
         <ion-item *ngFor = "let coaster of searchList | slice:0:20" class="creditInList" (click)= "itemClicked(coaster);">
 
-          <ion-avatar slot="end" [hidden]="!this.selectOption">
+          <ion-avatar slot="end" *ngIf="this.selectOption">
             <ion-thumbnail size="large">
               <ion-checkbox checked="{{this.isSelected(coaster)}}"></ion-checkbox>
             </ion-thumbnail>
@@ -43,7 +30,7 @@
 
           <ion-avatar slot="start">
             <ion-thumbnail size="large">
-              <ion-img [src] = "coastersService.getCoasterSmallImage(coaster?.mainImage)">
+              <ion-img [src] = "coastersService.getCoasterSmallImage(coaster?.image)">
 
                   </ion-img>
             </ion-thumbnail>
@@ -68,66 +55,25 @@
       </ion-item>
     </ion-list>
     
-  <p [hidden]="coasterInput != ''" style="text-align:center; padding: 0px; font-size:115%;">Can't find the coaster?</p>
-<p [hidden]="coasterInput != ''" style="text-align:center; padding: 0px; font-size:115%;">Put in a custom one below!</p>
+  <p *ngIf="coasterInput == ''" style="text-align:center; padding: 0px; font-size:115%;">Can't find the coaster?</p>
+  <p *ngIf="coasterInput == ''" style="text-align:center; padding: 0px; font-size:115%;">Put in a custom one below!</p>
 
-    <ion-item [hidden]="coasterInput != ''" lines="full">
-<ion-label color="dark" expand="full" style="padding: 0px"></ion-label>
-</ion-item>
-    
-      <ion-item [hidden]="coasterInput != ''" lines="full">
+    <ion-item *ngIf="coasterInput == ''" lines="full">
+      <ion-label color="dark" expand="full" style="padding: 0px"></ion-label>
+    </ion-item>
+
+      <ion-item *ngIf="coasterInput == ''" lines="full">
         <ion-label color="dark" expand="full"  style="padding-left: 0px" >Name: </ion-label>
         <ion-input (keypress)="closeKeyboard($event.keyCode)" autocomplete="off" enterkeyhint = "done" [(ngModel)]="manualCredit.name"></ion-input>
       </ion-item>
     
-      <ion-item [hidden]="coasterInput != ''" lines="full">
-        <ion-label color="dark" expand="full" style="padding-left: 0px">Manufacturer: </ion-label>
-        <ion-input (keypress)="closeKeyboard($event.keyCode)" autocomplete="off" enterkeyhint = "done" [(ngModel)]="manualCredit.manufacturer.name" debounce = "025" style="padding-top: 15px;"></ion-input>
-      </ion-item>
-      <ion-item [hidden]="coasterInput != ''" lines="full">
-        <ion-label color="dark" expand="full" style="padding-left: 0px">Height: </ion-label>
-        <ion-input placeholder="{{(this.mainService.settings.units == 'imperial' ? 'ft' : 'm')}}" (keypress)="closeKeyboard($event.keyCode)"  type="number" inputmode="numeric" autocomplete="off" enterkeyhint = "done" [(ngModel)]="manualCredit.height" debounce = "025" style="padding-top: 15px;"></ion-input>
-      </ion-item>
-      <ion-item [hidden]="coasterInput != ''" lines="full">
-        <ion-label color="dark"  size="large" style="padding-left: 0px">Park: </ion-label>
-        <ion-input (keypress)="closeKeyboard($event.keyCode)" autocomplete="off" enterkeyhint = "done" [(ngModel)]="manualCredit.park.name"></ion-input>
-      </ion-item>
-      <ion-item [hidden]="coasterInput != ''" lines="full">
-        <ion-label color="dark">Material: </ion-label>
-        <ion-select interface="popover" [(ngModel)]="manualCredit.materialType.name">
-          <ion-select-option>Steel</ion-select-option>
-          <ion-select-option>Wood</ion-select-option>
-          <ion-select-option>Hybrid</ion-select-option>
-        </ion-select>
-      </ion-item>
-      <ion-item [hidden]="coasterInput != ''" lines="full">
-        <ion-label color="dark" expand="full" style="padding-left: 0px">Time: </ion-label>
-        <ion-datetime display-format="MM/DD/YY h:mm A" picker-format="MM/DD/YYYY h:mm A" placeholder="Enter Time Ridden" [(ngModel)]="manualCredit.time"></ion-datetime>
-      </ion-item>
-      <ion-item [hidden]="coasterInput != ''" lines="full">
-        <ion-label color="dark" expand="full" style="padding-left: 0px">Max Speed: </ion-label>
-        <ion-input placeholder="{{(this.mainService.settings.units == 'imperial' ? 'mph' : 'm/s')}}" (keypress)="closeKeyboard($event.keyCode)"  type="number" inputmode="numeric" autocomplete="off" enterkeyhint = "done" [(ngModel)]="manualCredit.speed" debounce = "025" style="padding-top: 15px;"></ion-input>
-      </ion-item>
-      <ion-item [hidden]="coasterInput != ''" lines="full">
-        <ion-label color="dark" expand="full" style="padding-left: 0px">Type: </ion-label>
-        <ion-input (keypress)="closeKeyboard($event.keyCode)" autocomplete="off" enterkeyhint = "done" [(ngModel)]="manualCredit.seatingType.name" debounce = "025" style="padding-top: 15px;"></ion-input>
-      </ion-item>
-      <ion-item [hidden]="coasterInput != ''" lines="full">
-        <ion-label color="dark" expand="full" style="padding-left: 0px">Length: </ion-label>
-        <ion-input placeholder="{{(this.mainService.settings.units == 'imperial' ? 'ft' : 'm')}}"  (keypress)="closeKeyboard($event.keyCode)"  type="number" inputmode="numeric" autocomplete="off" enterkeyhint = "done" [(ngModel)]="manualCredit.length" debounce = "025" style="padding-top: 15px;"></ion-input>
-      </ion-item>
-      <ion-item [hidden]="coasterInput != ''" lines="full">
-        <ion-label color="dark" expand="full" style="padding-left: 0px">Inversions: </ion-label>
-        <ion-input (keypress)="closeKeyboard($event.keyCode)"  type="number" inputmode="numeric" autocomplete="off" enterkeyhint = "done" [(ngModel)]="manualCredit.inversionsNumber" debounce = "025" style="padding-top: 15px;"></ion-input>
-      </ion-item>
-    
-      <ion-button [hidden]="coasterInput != ''" expand= "block" fill="solid" strong = "true" color = "primary" size="default" (click)="submit(manualCredit);">Submit</ion-button>
+      <ion-button *ngIf="coasterInput == ''" expand= "block" fill="solid" strong = "true" color = "primary" size="default" (click)="submitManual(manualCredit);">Submit</ion-button>
       
      
   
 </ion-content>
 
-<ion-footer [hidden]="!this.selectOption">
+<ion-footer *ngIf="this.selectOption">
   <ion-toolbar>
     <h1 class="ion-text-center" style="padding-top: 5px; font-style: bold; font-size: 30px;" >
       {{"Selected: " + selectedList.length }}

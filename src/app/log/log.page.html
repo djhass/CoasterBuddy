@@ -9,12 +9,12 @@
       </p>
     </ion-title>
     <ion-buttons class="settings" slot="end" style="padding-right: 2.5vw; padding-top: 10px;" *ngIf="!(this.mainService?.filters?.appliedFilters)">
-      <ion-button *ngIf="(list_select != 'Coasters' || sort_select != 'rank' || this.edit)" (click)="startEdit()" fill="clear" color="dark">Edit</ion-button>
+      <ion-button *ngIf="!(list_select != 'Coasters' || sort_select != 'rank' || this.edit)" (click)="startEdit()" fill="clear" color="dark">Edit</ion-button>
       <ion-button *ngIf="this.edit" (click)="stopEdit()" fill="clear" color="dark">Done</ion-button>
     </ion-buttons>
-    <ion-buttons class="settings" slot="start" style="padding-left: 2.5vw; padding-top: 10px; font-color: black" *ngIf="!(this.mainService?.filters?.appliedFilters || list_select != 'Coasters' || sort_select != 'rank')">
+    <!-- <ion-buttons class="settings" slot="start" style="padding-left: 2.5vw; padding-top: 10px; font-color: black" *ngIf="!(this.mainService?.filters?.appliedFilters || list_select != 'Coasters' || sort_select != 'rank')">
       <ion-button (click)="sortPrompt()" color="dark">Rank</ion-button>
-    </ion-buttons>
+    </ion-buttons> -->
   </ion-toolbar>
 </ion-header>
 
@@ -41,21 +41,22 @@
       </ion-button>
       <ion-button style="position: absolute; right: 64px; top:-.65vh; height: 5vh; width: 5vh;" color="transparent" *ngIf="!(list_select != 'Coasters' || this.edit)">
         <ion-icon src="./assets/icon/up-down.svg" size="large" color="{{ this.sort_select == 'rank' ? 'dark' : 'primary' }}" style="height: 3.5vh; position: absolute;"></ion-icon>
-        <ion-select interface="alert" [interfaceOptions]="{header: 'Sort By'}" style="opacity:0" (ionChange)="this.sortBy(); this.edit = false" [value]="sort_select" *ngIf="!(list_select != 'Coasters')" slot="end"> 
+        <ion-select interface="alert" [interfaceOptions]="{header: 'Sort By'}" style="opacity:0" (ionChange)="this.sortBy(); this.edit = false" [(ngModel)]="sort_select" [value]="sort_select" *ngIf="!(list_select != 'Coasters')" slot="end"> 
           <ion-select-option value="rank">Rank</ion-select-option>
-          <ion-select-option value="height">Height</ion-select-option>
+          <ion-select-option value="max_height">Maximum Height</ion-select-option>
+          <ion-select-option value="drop_height">Drop Height</ion-select-option>
           <ion-select-option value="length">Length</ion-select-option>
-          <ion-select-option value="speed">Speed</ion-select-option>
-          <ion-select-option value="score">Popularity</ion-select-option>
+          <ion-select-option value="duration">Duration</ion-select-option>
+          <ion-select-option value="max_speed">Maxmum Speed</ion-select-option>
+          <ion-select-option value="max_acceleration">Maxmum Acceleration</ion-select-option>
           <ion-select-option value="time">Time</ion-select-option>
           <ion-select-option value="tally">Tally</ion-select-option>
-          <ion-select-option value="inversionsNumber">Inversions</ion-select-option>
-
+          <ion-select-option value="inversions">Inversions</ion-select-option>
         </ion-select>
       </ion-button>
       <ion-button style="position: absolute; right: 16px; top:-.65vh; height: 5vh; width: 5vh;" color="transparent" *ngIf="!(sort_select != 'rank' || this.edit || this.mainService.filters?.appliedFilters)">
         <ion-icon name="list" size="large" color="{{ this.list_select == 'Coasters' ? 'dark' : 'primary' }}" style="height: 3.5vh; position: absolute;"></ion-icon>
-        <ion-select interface="alert" [interfaceOptions]="{header: 'Display'}" style="opacity:0" (ionFocus)="this.sort_select = 'rank'" (ionChange)="this.edit = false;" [value]="list_select">
+        <ion-select interface="alert" [interfaceOptions]="{header: 'Display'}" style="opacity:0" (ionFocus)="this.sort_select = 'rank'" (ionChange)="this.edit = false;" [value]="list_select" [(ngModel)]="list_select">
           <ion-select-option>Coasters</ion-select-option>
           <ion-select-option>Parks</ion-select-option>
           <ion-select-option>Manufacturers</ion-select-option>
@@ -109,10 +110,10 @@
               </ion-row>
             </ion-col>
             <ion-buttons *ngIf="this.edit">
-              <ion-button (click)="$event.preventDefault();$event.stopPropagation();openEditComponent(credit);">
+              <ion-button (click)="$event.preventDefault();$event.stopPropagation(); openEditComponent(credit);">
                 <ion-icon name="pencil-outline" slot="icon-only" style="color: grey"></ion-icon>
               </ion-button>
-              <ion-button (click)="$event.preventDefault();$event.stopPropagation();onDeleteCoaster(credit.id);">
+              <ion-button (click)="$event.preventDefault();$event.stopPropagation(); onDeleteCoaster(credit.id);">
                 <ion-icon name="trash" slot="icon-only" style="color: grey"></ion-icon>
               </ion-button>
             </ion-buttons>
@@ -122,11 +123,11 @@
     </ion-reorder-group>
   </ion-list>
   <ion-list *ngIf="list_select == 'Parks'" class="parksList">
-    <ion-item *ngFor="let Park of coastersService.parksInCredits()" [routerLink]="['./park/', Park]" detail="false">
+    <ion-item *ngFor="let Park of coastersService.parksInCredits()" detail="false" [routerLink]="Park?.id ? ['./park/', Park.id] : null">
         <ion-col>
           <ion-row>
             <ion-label style="font-size: 18px; font-style: bold;"> 
-               {{ Park }} 
+               {{ Park.name }} 
             </ion-label>
           </ion-row>
         </ion-col>
@@ -136,25 +137,25 @@
       </ion-item>
   </ion-list>
   <ion-list *ngIf="list_select == 'Manufacturers'">
-    <ion-item *ngFor="let man of coastersService.manufacturersInCredits()" [routerLink]="['./manufacturer/', man]" detail="false">
+    <ion-item *ngFor="let man of coastersService.manufacturersInCredits()" [routerLink]="man?.id ? ['./make/', man.id] : null" detail="false">
       <ion-col>
         <ion-row>
           <ion-label style="font-size: 18px; font-style: bold;"> 
-            {{ man }} 
+            {{ man.name }} 
           </ion-label>
         </ion-row>
       </ion-col>
       <ion-badge slot="end">
-        <ion-label style="font-size: 16px;" [routerLink]="['./park/', man]"> {{ this.creditsInMan(man) }}</ion-label>
+        <ion-label style="font-size: 16px;"> {{ this.creditsInMake(man) }}</ion-label>
       </ion-badge>
     </ion-item>
   </ion-list>
   <ion-list *ngIf="!(list_select != 'Coasters' || sort_select == 'rank')">
-    <ion-item *ngFor="let coaster of coastersService.displayCreditList;" [routerLink] ="['./credit', coaster.id]" detail="false" style="padding-bottom:4px;">
-      <ion-thumbnail style="width:fit-content; padding-right: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center;" *ngIf="(sort_select == 'height') || (sort_select == 'score') || (sort_select == 'tally') || (sort_select == 'inversionsNumber')">
-        <ion-label style="font-size: 18px; font-weight: bold" *ngIf="sort_select == 'score'"> {{ Math.round(coaster?.score) }}%</ion-label>
-        <ion-label style="font-size: 18px; font-weight: bold" *ngIf="sort_select == 'tally'"> {{ coaster?.tally}}</ion-label>
-        <ion-label style="font-size: 18px; font-weight: bold" *ngIf="sort_select == 'inversionsNumber'"> {{ coaster?.inversionsNumber}}</ion-label>
+    <ion-item *ngFor="let coaster of coastersService.displayCreditList;" [routerLink] ="coaster?.id ? ['./credit', coaster.id] : null" detail="false" style="padding-bottom:4px;">
+      <ion-thumbnail style="width:fit-content; padding-right: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center;" *ngIf="(sort_select == 'duration') || (sort_select == 'tally') || (sort_select == 'inversions')">
+        <ion-label style="font-size: 18px; font-weight: bold" *ngIf="sort_select == 'tally'">{{ coaster?.tally }}</ion-label>
+        <ion-label style="font-size: 18px; font-weight: bold" *ngIf="sort_select == 'inversions'">{{ coaster?.inversions }}</ion-label>
+        <ion-label style="font-size: 18px; font-weight: bold" *ngIf="sort_select == 'duration'">{{ Math.round(coaster.duration / 60)}}:{{(coaster.duration % 60).toString().padStart(2, '0') }}</ion-label>
       </ion-thumbnail>
         <ion-col>
           <ion-row>
@@ -166,10 +167,39 @@
             <ion-label style="font-size: 15px;" color="medium"> {{ coaster?.park?.name }} </ion-label>
           </ion-row>
           <ion-row>
-            <ion-datetime style="font-size: 15px; font-weight: bold;" *ngIf="sort_select == 'time'" [value]="coaster.time" disabled="true" ></ion-datetime>
-            <ion-label style="font-size: 18px; font-weight: bold;" *ngIf="sort_select == 'length'"> {{ Math.round(coaster.length * (this.mainService.settings.units == "imperial" ? 3.280839895 : 1)) }} <ion-text *ngIf="this.mainService.settings.units == 'imperial'"> ft</ion-text><ion-text *ngIf="this.mainService.settings.units == 'metric'"> m</ion-text></ion-label>
-            <ion-label style="font-size: 18px; font-weight: bold" *ngIf="sort_select == 'height'"> {{ Math.round(coaster.height * (this.mainService.settings.units == "imperial" ? 3.280839895 : 1)) }} <ion-text *ngIf="this.mainService.settings.units == 'imperial'"> ft</ion-text><ion-text *ngIf="this.mainService.settings.units == 'metric'"> m</ion-text></ion-label>
-            <ion-label style="font-size: 18px; font-weight: bold;" *ngIf="sort_select == 'speed'"> {{ Math.round(coaster.speed * (this.mainService.settings.units == "imperial" ? 0.621371 : 1)) }} <ion-text *ngIf="this.mainService.settings.units == 'imperial'"> mph</ion-text><ion-text *ngIf="this.mainService.settings.units == 'metric'"> m/s</ion-text></ion-label>
+            <ion-label style="font-size: 15px; font-weight: bold;" *ngIf="sort_select == 'time' && coaster.time" disabled="true">{{ ISOToReadable(coaster.time) }}</ion-label>
+            <ion-label style="font-size: 18px; font-weight: bold;" *ngIf="sort_select == 'length' && coaster.length"> 
+              <ion-text *ngIf="coaster.length.imperial && (!this.mainService.settings.metric || (this.mainService.settings.defaultUnits && !coaster.prefersMetric))"> 
+                {{ Math.round(coaster.length.imperial) }} ft
+              </ion-text>
+              <ion-text *ngIf="coaster.length.metric && (this.mainService.settings.metric || (this.mainService.settings.defaultUnits && coaster.prefersMetric))">
+                {{ Math.round(coaster.length.metric) }} m
+              </ion-text>
+            </ion-label>
+            <ion-label style="font-size: 18px; font-weight: bold" *ngIf="sort_select == 'max_height' && coaster.max_height"> 
+              <ion-text *ngIf="coaster.max_height.imperial && (!this.mainService.settings.metric || (this.mainService.settings.defaultUnits && !coaster.prefersMetric))"> 
+                {{ Math.round(coaster.max_height.imperial) }} ft
+              </ion-text>
+              <ion-text *ngIf="coaster.max_height.metric && (this.mainService.settings.metric || (this.mainService.settings.defaultUnits && coaster.prefersMetric))">
+                {{ Math.round(coaster.max_height.metric) }} m
+              </ion-text>
+            </ion-label>
+            <ion-label style="font-size: 18px; font-weight: bold" *ngIf="sort_select == 'drop_height' && coaster.drop_height"> 
+              <ion-text *ngIf="coaster.drop_height.imperial && (!this.mainService.settings.metric || (this.mainService.settings.defaultUnits && !coaster.prefersMetric))"> 
+                {{ Math.round(coaster.drop_height.imperial) }} ft
+              </ion-text>
+              <ion-text *ngIf="coaster.drop_height.metric && (this.mainService.settings.metric || (this.mainService.settings.defaultUnits && coaster.prefersMetric))">
+                {{ Math.round(coaster.drop_height.metric) }} m
+              </ion-text>
+            </ion-label>
+            <ion-label style="font-size: 18px; font-weight: bold;" *ngIf="sort_select == 'max_speed'"> 
+              <ion-text *ngIf="coaster.max_speed.imperial && (!this.mainService.settings.metric || (this.mainService.settings.defaultUnits && !coaster.prefersMetric))"> 
+                {{ Math.round(coaster.max_speed.imperial) }} mph
+              </ion-text>
+              <ion-text *ngIf="coaster.max_speed.metric && (this.mainService.settings.metric || (this.mainService.settings.defaultUnits && coaster.prefersMetric))">
+                {{ Math.round(coaster.max_speed.metric) }} m/s
+              </ion-text>
+            </ion-label>
           </ion-row>
         </ion-col>
       </ion-item>
@@ -201,7 +231,7 @@
 
         <ion-tab-button [routerLink]="'/database'" routerDirection="forward">
           <ion-icon name="book"></ion-icon>
-          <ion-label>Database</ion-label>
+          <ion-label>Explore</ion-label>
         </ion-tab-button>
 
         <ion-tab-button [routerLink]="'/navigate'" routerDirection="forward">

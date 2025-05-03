@@ -1,101 +1,389 @@
 
+  <ion-header class="scroll-header hidden">
+    <ion-toolbar>
+      <ion-buttons slot="start" style="padding-left: 8px;" >
+          <ion-back-button color="dark" defaultHref="/home" style="width: 62px;"></ion-back-button>
+      </ion-buttons>
+      <h1 class="ion-text-center" style="font-style: bold; font-size: 25px; font-weight: bold" >
+        {{ this.loadedCoaster.name }}
+      </h1>
+      <ion-buttons slot="end" style="padding-right: 8px; width: 54px;">
+        <ion-button color="dark">
+          <ion-icon name="create"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+    <ion-toolbar>
+      <ion-title size="large" style="text-align: left; padding-left: 0px !important; font-weight:200">
+        <ion-item style="--inner-padding-start: 0;" *ngIf="this.loadedCoaster.image">
+          <ion-avatar style="height: 15vw; width:15vw;">
+            <ion-img [src]="this.shownImg || this.altImg" (ionError)="onImgFail()"></ion-img>
+          </ion-avatar>
 
-<ion-header style="padding-top: 0px !important;">
-  <ion-toolbar style="padding-top: 20px !important;" color="light">
-  	<ion-buttons slot="start">
-  	    <ion-back-button defaultHref="/home"></ion-back-button>
-  	</ion-buttons>
-    	
-    <h1 class="ion-text-center" style="font-style: bold; font-size: 25px; padding-bottom: 10px;" >
-      {{this.loadedCoaster.name }}
-    </h1>
-  	
-  	<ion-buttons slot="end" style="padding-left: 14px;">
-      <ion-button [hidden]="this.coastersService.getCredit(this.loadedCoaster.id).id == this.loadedCoaster.id" (click)="pushCredit(this.loadedCoaster)">
-        <ion-icon name="add"></ion-icon>
-      </ion-button>
-      <ion-button [hidden]="this.coastersService.getCredit(this.loadedCoaster.id).id != this.loadedCoaster.id" style="pointer-events: none;">
-        <ion-icon name="checkmark" color="success"></ion-icon>
-      </ion-button>
-  </ion-buttons>
-    
-  </ion-toolbar>
-</ion-header>
+          <div class="small-toolbar-item-container" *ngIf="this.loadedCoaster.status">
+            <div class="small-toolbar-item" *ngIf="this.loadedCoaster.status.calculated_wait && this.loadedCoaster.status.open">
+              <ion-icon name="hourglass-outline"></ion-icon>
+              <ion-label style="font-weight:bold">{{this.loadedCoaster.status.calculated_wait}}</ion-label>
+            </div>
+            <div class="small-toolbar-item" *ngIf="!this.loadedCoaster.status.open && !this.loadedCoaster.status.testing && this.loadedCoaster.status.standing && this.loadedCoaster.status.operable">
+              <ion-label>Currently Closed</ion-label>
+            </div>
+            <div class="small-toolbar-item" *ngIf="this.loadedCoaster.status.open && !this.loadedCoaster.status.trains_on_track && !this.loadedCoaster.status.operation_speed && !this.loadedCoaster.status.posted_wait">
+              <ion-label>Operational</ion-label>
+            </div>
+            <div class="small-toolbar-item" *ngIf="this.loadedCoaster.status.testing">
+              <ion-label>Testing</ion-label>
+            </div>
+            <div class="small-toolbar-item" *ngIf="!this.loadedCoaster.status.operable && this.loadedCoaster.status.standing">
+              <ion-label>Closed Indefinitely</ion-label>
+            </div>
+            <div class="small-toolbar-item" *ngIf="!this.loadedCoaster.status.standing">
+              <ion-label>Removed</ion-label>
+            </div>
+            <div class="small-toolbar-item" *ngIf="(this.loadedCoaster.status.open || this.loadedCoaster.status.testing) && this.loadedCoaster.status.trains_on_track && (!this.loadedCoaster.status.posted_wait || !this.loadedCoaster.status.calculated_wait || this.loadedCoaster.status.testing)">
+              <ion-icon name="train"></ion-icon>
+              <ion-label *ngIf="this.loadedCoaster.trains">{{ this.loadedCoaster.status.trains_on_track }}/{{this.loadedCoaster.trains}}</ion-label>
+              <ion-label *ngIf="!this.loadedCoaster.trains">{{ this.loadedCoaster.status.trains_on_track }}</ion-label>
+            </div>
+            <div class="small-toolbar-item" *ngIf="this.loadedCoaster.status.open && this.loadedCoaster.status.posted_wait">
+              <ion-icon name="time"></ion-icon>
+              <ion-label>{{ this.loadedCoaster.status.posted_wait }}</ion-label>
+            </div>
+            <div class="small-toolbar-item" *ngIf="this.loadedCoaster.status.open && this.loadedCoaster.status.operation_speed && !this.loadedCoaster.capacity">
+              <ion-icon name="people"></ion-icon>
+              <ion-label>{{this.loadedCoaster.status.operation_speed}}</ion-label>
+            </div>
+            <div class="small-toolbar-item" *ngIf="this.loadedCoaster.status.open && this.loadedCoaster.status.operation_speed && this.loadedCoaster.capacity">
+              <ion-icon name="people"></ion-icon>
+              <ion-label>{{Math.round(this.loadedCoaster.status.operation_speed / this.loadedCoaster.capacity * 100)}}%</ion-label>
+            </div>
+          </div>
+          
+        </ion-item>
+      </ion-title>
+    </ion-toolbar>
+  </ion-header>
 
-
-
-<ion-content color="transparent"> <!--scroll-y="false"-->
-
-  <div style="position: relative; text-align: center; color: white;">
-    <ion-img style="height: 34.7156vh;" [src]="coastersService.getCoasterLargeImage(loadedCoaster.mainImage)"></ion-img>
-    <div style="position: absolute; top: 8px; right: 8px;">
-      <ion-chip style="width: 90px; height: 20px; background-color: {{ this.loadedCoaster.status.name == 'status.operating' ? '#2dd36f' : '#eb445a' }}">
-        <ion-label class="ion-text-center" style="font-size: 16px; width: 100vw; color: white;" [hidden]="this.loadedCoaster.status.name != 'status.operating'">Standing</ion-label>
-        <ion-label class="ion-text-center" style="font-size: 16px; width: 100vw; color: white;" [hidden]="this.loadedCoaster.status.name == 'status.operating'">Closed</ion-label>
+  <ion-content scrollEvents="true" (ionScroll)="handleScroll($event)">
+    <ion-header collapse="condense">
+      <ion-toolbar>
+        <ion-buttons slot="start" style="padding-left: 8px;">
+            <ion-back-button color="dark" defaultHref="/home" style="width: 62px;"></ion-back-button>
+        </ion-buttons>
+        <h1 class="ion-text-center" style="font-style: bold; font-size: 25px; font-weight: bold" >
+          {{this.loadedCoaster.name }}
+        </h1>
+        <ion-buttons slot="end" style="padding-right: 8px; width: 54px;">
+          <ion-button color="dark">
+            <ion-icon name="create"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+      <ion-toolbar>
+        <ion-title size="small">
+          <div class="large-toolbar-item-container" *ngIf="this.loadedCoaster.status">
+            <ion-chip class="large-toolbar-item" *ngIf="this.loadedCoaster.status.calculated_wait && this.loadedCoaster.status.open">
+              <ion-icon name="hourglass-outline" color="black"></ion-icon>
+              <ion-label style="font-weight:bold">{{this.loadedCoaster.status.calculated_wait}} min</ion-label>
+            </ion-chip>
+            <ion-chip class="large-toolbar-item" style="background-color:var(--ion-color-danger); color:white" *ngIf="!this.loadedCoaster.status.open && !this.loadedCoaster.status.testing && this.loadedCoaster.status.standing && this.loadedCoaster.status.operable">
+              Currently Closed
+            </ion-chip>
+            <ion-chip class="large-toolbar-item" style="background-color:var(--ion-color-success)" *ngIf="this.loadedCoaster.status.open && !this.loadedCoaster.status.trains_on_track && !this.loadedCoaster.status.operation_speed && !this.loadedCoaster.status.posted_wait && !this.loadedCoaster.status.calculated_wait">
+              Operational
+            </ion-chip>
+            <ion-chip class="large-toolbar-item" style="background-color:var(--ion-color-warning);" *ngIf="this.loadedCoaster.status.testing">
+              Testing
+            </ion-chip>
+            <ion-chip class="large-toolbar-item" style="background-color:var(--ion-color-danger); color:white" *ngIf="!this.loadedCoaster.status.operable && this.loadedCoaster.status.standing">
+              Closed Indefinitely
+            </ion-chip>
+            <ion-chip class="large-toolbar-item" style="background-color:var(--ion-color-danger); color:white" *ngIf="!this.loadedCoaster.status.standing">
+              Removed
+            </ion-chip>
+            <ion-chip class="large-toolbar-item" *ngIf="this.loadedCoaster.status.posted_wait && this.loadedCoaster.status.open">
+              <ion-icon name="time-outline" color="black"></ion-icon>
+              <ion-label>{{this.loadedCoaster.status.posted_wait}} min posted</ion-label>
+            </ion-chip>
+            <ion-chip class="large-toolbar-item" *ngIf="this.loadedCoaster.status.open && this.loadedCoaster.status.operation_speed && !this.loadedCoaster.capacity">
+              <ion-icon name="people-outline" color="black"></ion-icon>
+              <ion-label>{{this.loadedCoaster.status.operation_speed}} riders/hr</ion-label>
+            </ion-chip>
+            <ion-chip class="large-toolbar-item" *ngIf="this.loadedCoaster.status.open && this.loadedCoaster.status.operation_speed && this.loadedCoaster.capacity">
+              <ion-icon name="people-outline" color="black"></ion-icon>
+              <ion-label>{{Math.round(this.loadedCoaster.status.operation_speed / this.loadedCoaster.capacity * 100)}}% operation</ion-label>
+            </ion-chip>
+            <ion-chip class="large-toolbar-item" *ngIf="(this.loadedCoaster.status.open || this.loadedCoaster.status.testing) && this.loadedCoaster.status.trains_on_track"> 
+              <ion-icon name="train-outline" color="black"></ion-icon>
+              <ion-label *ngIf="this.loadedCoaster.trains">{{ this.loadedCoaster.status.trains_on_track }}/{{this.loadedCoaster.trains}} trains</ion-label>
+              <ion-label *ngIf="!this.loadedCoaster.trains">{{ this.loadedCoaster.status.trains_on_track }} train{{this.loadedCoaster.status.trains_on_track > 1 ? 's' : ''}}</ion-label>
+            </ion-chip>
+          </div>
+          <ion-img [src]="this.shownImg || this.altImg" (ionError)="onImgFail()"></ion-img>
+        </ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <div style="
+      display: flex;
+      justify-content: space-between;
+      width: 93vw;
+      align-items: center;
+      padding-left:24px;
+      padding-bottom:8px;
+    ">
+      <ion-chip style="font-size: 20px;" *ngIf="this.loadedCoaster.minRiderHeight"> 
+        <ion-icon name="man" color="black"></ion-icon>
+        <ion-label>{{this.loadedCoaster.minRiderHeight.imperial}}"</ion-label>
+      </ion-chip>
+      <ion-chip style="font-size: 20px;" *ngIf="this.loadedCoaster.maxRiderHeight"> 
+        <ion-icon name="man" color="black"></ion-icon>
+        <ion-label>{{this.loadedCoaster.maxRiderHeight.imperial}}"</ion-label>
+      </ion-chip>
+      <ion-chip style="font-size: 20px;" *ngIf="this.loadedCoaster.minOccupiedRiderHeight"> 
+        <ion-icon name="man" color="black"></ion-icon>
+        <ion-label>{{this.loadedCoaster.minOccupiedRiderHeight.imperial}}"</ion-label>
       </ion-chip>
     </div>
-  </div>
-
-  <ion-item lines="none" style="border-bottom: none !important; pointer-events: none;">
-    <ion-chip style="width: 45%; height: 4.739vh;">
-        <ion-icon color="medium" size="large" name="speedometer"></ion-icon>
-      <ion-label style="font-size: 24px;">{{ Math.round(this.loadedCoaster?.speed * (this.mainService.settings.units == "imperial" ? 0.621371 : 1)) }}</ion-label> <ion-label style="font-size: 24px;" [hidden]="this.mainService.settings.units != 'metric'">&nbsp;km/h</ion-label> <ion-label style="font-size: 24px;" [hidden]="this.mainService.settings.units != 'imperial'">&nbsp;mph</ion-label>
-    </ion-chip>
     
-    <ion-chip style="width: 45%; height: 4.739vh; pointer-events: none;">
-      <ion-icon color="medium" style="width: 25px; height: 25px;" src="./assets/icon/Ruler-04.svg"></ion-icon>
-      <ion-label style="font-size: 24px; padding-left:8%;" >{{ Math.round(this.loadedCoaster?.height * (this.mainService.settings.units == "imperial" ? 3.280839895 : 1)) }}</ion-label> <ion-label style="font-size: 24px;" [hidden]="this.mainService.settings.units != 'metric'">&nbsp;m</ion-label> <ion-label style="font-size: 24px;" [hidden]="this.mainService.settings.units != 'imperial'">&nbsp;ft</ion-label>
-      <!--
-      <ion-icon style="width: 25px; height: 25px; color: #BEC2CB; position: absolute; top: 50%; left: 50px; transform: translate(0, 0%)" name="star" [hidden]="this.loadedCoaster.height < 60.96 || this.loadedCoaster.height > 91.44"></ion-icon>
-      <ion-icon style="width: 25px; height: 25px; color: #FFD700  position: absolute; top: 50%; left: 50px; transform: translate(0, 0%)" name="star" [hidden]="60.96 && this.loadedCoaster.height < 91.44"></ion-icon>
-      <ion-icon style="width: 25px; height: 25px;" name="star-outline" [hidden]="this.loadedCoaster.height > 60.96"></ion-icon>
-      -->
-    </ion-chip>
-  </ion-item>
-  <ion-item lines="none" style="border-bottom: none !important; pointer-events: none;">
-    <ion-chip style="width: 45%; height: 4.739vh;" >
-        <ion-icon color="medium" size="large" src="./assets/icon/loop.svg"></ion-icon>
-      <ion-label style="font-size: 24px; padding-left:20%;">{{ this.loadedCoaster?.inversionsNumber }}</ion-label>
-    </ion-chip>
-    
-    <ion-chip style="width: 45%; height: 4.739vh; pointer-events: none;">
-      <ion-icon color="medium" style="width: 25px; height: 25px;" src="./assets/icon/tracksvg.svg"></ion-icon>
-      <ion-label style="font-size: 24px; padding-left:8%;">{{ Math.round(this.loadedCoaster?.length * (this.mainService.settings.units == "imperial" ? 3.280839895 : 1)) }} </ion-label> <ion-label style="font-size: 24px;" [hidden]="this.mainService.settings.units != 'metric'">&nbsp;m</ion-label> <ion-label style="font-size: 24px;" [hidden]="this.mainService.settings.units != 'imperial'">&nbsp;ft</ion-label>
-    </ion-chip>
-  </ion-item>
-  <ion-item lines="none" class="ion-text-center" style="border-bottom: none !important; pointer-events: none;">
-    <ion-chip style="width: 45%; height: 4.739vh;">
-      <ion-label style="font-size: 24px; width: 100vw;">{{ this.loadedCoaster?.seatingType?.name }}</ion-label>
-    </ion-chip>
-    
-    <ion-chip style="width: 45%; height: 4.739vh;">
-      <ion-label style="font-size: 24px; width: 100vw;">{{ this.loadedCoaster?.materialType?.name }}</ion-label>
-    </ion-chip>
-  </ion-item>
 
-  <ion-grid>
-    <ion-row class="ion-align-items-center">
-      <ion-col size="12" class="ion-text-center">
-        <ion-button color="transparent" style="height: 8.7678vh; width: 43vh; background-image: url('./assets/Buttons/Park Button.svg'); background-size:cover;" [routerLink]="['/' + this.page + '/park/', this.loadedCoaster.park.name]">
-          <ion-text style="font-size: 6.5vw; font-weight:600; overflow:hidden; width: 85%; color:black">
-            {{ this.loadedCoaster?.park?.name }}
-          </ion-text>
-        </ion-button>
-  
-        <ion-button color="transparent" style="height: 8.7678vh; width: 43vh; background-image: url('./assets/Buttons/Manufacturer Button.svg'); background-size:cover;" [routerLink]="['/' + this.page + '/manufacturer/', this.loadedCoaster?.manufacturer?.name]">
-          <ion-text style="font-size: 6.5vw; font-weight:600; overflow:hidden; width: 85%; color:black">
-            {{ this.loadedCoaster?.manufacturer?.name }}
-          </ion-text>
-        </ion-button>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+    <div style="display: flex; justify-content: center; width: 100vw; overflow:hidden;">
+      <ion-card style="background-color: var(--ion-color-light); width: 45vw; height: 35vw; display: flex; justify-content: center; align-items: center; text-align: center" *ngIf="this.loadedCoaster.park" [routerLink]="this.loadedCoaster.park?.id ? ['/' + this.page + '/park/', this.loadedCoaster.park.id] : null">
+        <ion-grid>
+          <ion-row style="display: flex; justify-content: center;" *ngIf="this.loadedCoaster.name">
+            <ion-text style="font-weight: bold; font-size: 24px; color: var(--ion-color-dark)">{{this.loadedCoaster.park.short_name ? this.loadedCoaster.park.short_name : this.loadedCoaster.park.name}}</ion-text>
+          </ion-row>
+          <br>
+          <ion-row style="display: flex; justify-content: center;" *ngIf="this.loadedCoaster.park && this.loadedCoaster.park.parent && this.loadedCoaster.park.parent.name">
+            <ion-text style="font-size: 18px; color: var(--ion-color-medium)">{{this.loadedCoaster.park.parent.short_name ? this.loadedCoaster.park.parent.short_name : this.loadedCoaster.park.parent.name}}</ion-text>
+          </ion-row>
+        </ion-grid>
+      </ion-card>
+      <ion-card *ngIf="this.loadedCoaster.make" style="background-color: var(--ion-color-light); width: 45vw; height: 35vw; display: flex; justify-content: center; align-items: center; text-align: center" [routerLink]="this.loadedCoaster.make?.id ? ['/' + this.page + '/make/', this.loadedCoaster.make.id] : null">
+        <ion-grid>
+          <ion-row style="display: flex; justify-content: center;" *ngIf="this.loadedCoaster.make.name">
+            <ion-text style="font-weight: bold; font-size: 24px; color: var(--ion-color-dark)">{{this.loadedCoaster.make.short_name ? this.loadedCoaster.make.short_name : this.loadedCoaster.make.name}}</ion-text>
+          </ion-row>
+          <br>
+          <ion-row style="display: flex; justify-content: center;" *ngIf="this.loadedCoaster.make.country">
+            <ion-text style="font-size: 18px; color: var(--ion-color-medium)">{{this.loadedCoaster.make.country}}</ion-text>
+          </ion-row>
+        </ion-grid>
+      </ion-card>
+    </div>
 
-  <ion-item lines="none" style="border-bottom: none !important; pointer-events: none; height: 12vh;" [hidden]="!this.loadedCoaster.score">
-    <ion-range min="0" max="100" [(ngModel)]="this.loadedCoaster.score" [pin]="true" [style.--bar-background-active]="mainService.interpolateIonicColors('success', 'danger', this.loadedCoaster.score/100)">
-      <ion-icon name="thumbs-down" slot="start" color="danger"></ion-icon>
-      <ion-icon name="thumbs-up" slot="end" color="success"></ion-icon>
-    </ion-range>
-  </ion-item>
-   
-</ion-content>
+    <ion-card style="background-color:transparent" *ngIf="this.loadedCoaster.models && this.loadedCoaster.models.length ">
+      <ion-card-title style="display: flex; justify-content: center;">
+        <ion-text style="font-size: 20px;">
+          Models
+        </ion-text>
+      </ion-card-title>
+      <ion-card-content>
+        <ion-list>
+          <ion-chip style="height: 55px; font-size: 20px;" *ngFor="let model of this.loadedCoaster.models">
+            {{model}}
+          </ion-chip>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+    <ion-card style="background-color:transparent" *ngIf="this.loadedCoaster.tags && this.loadedCoaster.tags.length > 0">
+      <ion-card-title style="display: flex; justify-content: center;">
+        <ion-text style="font-size: 20px;">
+          Tags
+        </ion-text>
+      </ion-card-title>
+      <ion-card-content>
+        <ion-list>
+          <ion-chip style="height: 45px; font-size: 20px;" *ngFor="let tag of this.loadedCoaster.tags">
+            {{tag}}
+          </ion-chip>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+    <ion-card style="background-color:transparent" *ngIf="this.loadedCoaster.description">
+      <ion-card-title style="display: flex; justify-content: center;">
+        <ion-text style="font-size: 20px;">
+          Description
+        </ion-text>
+      </ion-card-title>
+      <ion-card-content>
+        <ion-text style="color: white; font-size: 18px;">
+          {{this.loadedCoaster.description}}
+        </ion-text>
+      </ion-card-content>
+    </ion-card>
+    <ion-card style="background-color:transparent" *ngIf="this.loadedCoaster.records && this.loadedCoaster.records.length > 0">
+      <ion-card-title style="display: flex; justify-content: center;">
+        <ion-text style="font-size: 20px;">
+          Records
+        </ion-text>
+      </ion-card-title>
+      <ion-card-content>
+        <ion-list>
+          <ion-chip style="height: 55px; font-size: 20px;" *ngFor="let record of this.loadedCoaster.records">
+            {{record.type}} {{record.specifier}} in the {{record.span}}
+          </ion-chip>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+    <br>
+    <ion-item>
+      <ion-chip slot="end" style="height:38px;">
+        <ion-select label="Units:" [(ngModel)]="this.useMetric">
+          <ion-select-option [value]="true">Metric <div *ngIf="this.loadedCoaster.prefersMetric">(Preferred)</div></ion-select-option>
+          <ion-select-option [value]="false">Imperial <div *ngIf="!this.loadedCoaster.prefersMetric">(Preferred)</div></ion-select-option>
+        </ion-select>
+      </ion-chip>
+    </ion-item>
+    <ion-list style="padding-bottom: 24px;">
+      <ion-item style="font-size:18px;" *ngIf="this.loadedCoaster.max_speed && (this.loadedCoaster.max_speed.imperial || this.loadedCoaster.max_speed.metric)">
+        <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+          <ion-icon size="large" name="speedometer"></ion-icon>
+        </ion-avatar>
+        <ion-label color="dark" style="padding-left: 16px" >Maximum Speed: </ion-label>
+        <ion-text *ngIf="this.loadedCoaster.max_speed.imperial && (!this.loadedCoaster.max_speed.metric || !this.useMetric)">
+          {{this.loadedCoaster.max_speed.imperial}} mph
+        </ion-text>
+        <ion-text *ngIf="this.loadedCoaster.max_speed.metric && (!this.loadedCoaster.max_speed.imperial || this.useMetric)">
+          {{this.loadedCoaster.max_speed.metric}} km/h
+        </ion-text>
+      </ion-item>
+      <ion-item style="font-size:18px;" *ngIf="this.loadedCoaster.max_acceleration && (this.loadedCoaster.max_acceleration.imperial || this.loadedCoaster.max_acceleration.metric)">
+        <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+          <ion-icon name="play-forward-outline" size="large"></ion-icon>
+        </ion-avatar>
+        <ion-label color="dark" style="padding-left: 16px" >Maximum Acceleration: </ion-label>
+        <ion-text *ngIf="this.loadedCoaster.max_acceleration.imperial && (!this.loadedCoaster.max_acceleration.metric || !this.useMetric)">
+          {{this.loadedCoaster.max_acceleration.imperial}} ft/s²
+        </ion-text>
+        <ion-text *ngIf="this.loadedCoaster.max_acceleration.metric && (!this.loadedCoaster.max_acceleration.imperial || this.useMetric)">
+          {{this.loadedCoaster.max_acceleration.metric}} m/s²
+        </ion-text>
+      </ion-item>
+        <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCoaster.max_height && (this.loadedCoaster.max_height.imperial || this.loadedCoaster.max_height.metric)">
+        <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+          <ion-icon size="large" src="./assets/icon/Ruler-04.svg"></ion-icon>
+        </ion-avatar>
+        <ion-label color="dark" style="padding-left: 16px" >Maximum Height: </ion-label>
+        <ion-text *ngIf="this.loadedCoaster.max_height.imperial && (!this.loadedCoaster.max_height.metric || !this.useMetric)">
+          {{this.loadedCoaster.max_height.imperial}} feet 
+        </ion-text>
+        <ion-text *ngIf="this.loadedCoaster.max_height.metric && (!this.loadedCoaster.max_height.imperial || this.useMetric)">
+          {{this.loadedCoaster.max_height.metric}} meters
+        </ion-text>
+      </ion-item>
+      <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCoaster.drop_height && (this.loadedCoaster.drop_height.imperial || this.loadedCoaster.drop_height.metric)">
+        <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+          <ion-icon size="large" name="chevron-down"></ion-icon>
+        </ion-avatar>
+        <ion-label color="dark" style="padding-left: 16px" >Drop Height: </ion-label>
+        <ion-text *ngIf="this.loadedCoaster.drop_height.imperial && (!this.loadedCoaster.drop_height.metric || !this.useMetric)">
+          {{this.loadedCoaster.drop_height.imperial}} feet
+        </ion-text>
+        <ion-text *ngIf="this.loadedCoaster.drop_height.metric && (!this.loadedCoaster.drop_height.imperial || this.useMetric)">
+          {{this.loadedCoaster.drop_height.metric}} meters
+        </ion-text>
+      </ion-item>
+      <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCoaster.length && (this.loadedCoaster.length.imperial || this.loadedCoaster.length.metric)">
+        <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+          <ion-icon size="large" src="./assets/icon/tracksvg.svg"></ion-icon>
+        </ion-avatar>
+        <ion-label color="dark" style="padding-left: 16px" >Track Length: </ion-label>
+        <ion-text *ngIf="this.loadedCoaster.length.imperial && (!this.loadedCoaster.length.metric || !this.useMetric)">
+          {{this.loadedCoaster.length.imperial}} feet
+        </ion-text>
+        <ion-text *ngIf="this.loadedCoaster.length.metric && (!this.loadedCoaster.length.imperial || this.useMetric)">
+          {{this.loadedCoaster.length.metric}} kilometers
+        </ion-text>
+      </ion-item>
+      <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCoaster.inversions || this.loadedCoaster.inversions == 0">
+        <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+          <ion-icon size="large" src="./assets/icon/loop.svg"></ion-icon>
+        </ion-avatar>
+        <ion-label color="dark" style="padding-left: 16px" >Inversions: </ion-label>
+        <ion-text>
+          {{this.loadedCoaster.inversions}}
+        </ion-text>
+      </ion-item>
+      <ion-item style="font-size:18px;" *ngIf="this.loadedCoaster.duration">
+        <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+          <ion-icon size="large" name="stopwatch"></ion-icon>
+        </ion-avatar>
+        <ion-label color="dark" style="padding-left: 16px" >Duration: </ion-label>
+        <ion-text>
+          {{Math.round(this.loadedCoaster.duration / 60)}}:{{(this.loadedCoaster.duration % 60).toString().padStart(2, '0')}} minutes
+        </ion-text>      
+      </ion-item>
+      <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCoaster.material">
+        <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+          <ion-icon size="large" name="server"></ion-icon>
+        </ion-avatar>
+        <ion-label color="dark" style="padding-left: 16px" >Material: </ion-label>
+        <ion-text>
+          {{this.loadedCoaster.material}}
+        </ion-text>
+      </ion-item>
+      <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCoaster.propulsion">
+        <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+          <ion-icon size="large" name="rocket"></ion-icon>
+        </ion-avatar>
+        <ion-label color="dark" style="padding-left: 16px" >Propulsion Type: </ion-label>
+        <ion-text>
+          {{this.loadedCoaster.propulsion}}
+        </ion-text>
+      </ion-item>
+      <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCoaster.opened">
+        <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+          <ion-icon size="large" name="calendar"></ion-icon>
+        </ion-avatar>
+        <ion-label color="dark" style="padding-left: 16px" >Date Opened: </ion-label>
+        <ion-text>
+          {{this.displayDate(this.loadedCoaster.opened)}}
+        </ion-text>
+      </ion-item>
+      <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCoaster.closed">
+        <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+          <ion-icon size="large" name="calendar"></ion-icon>
+        </ion-avatar>
+        <ion-label color="dark" style="padding-left: 16px" >Date Closed: </ion-label>
+        <ion-text>
+          {{this.displayDate(this.loadedCoaster.closed)}}
+        </ion-text>
+      </ion-item>
+      <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCoaster.capacity">
+        <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+          <ion-icon size="large" name="send"></ion-icon>
+        </ion-avatar>
+        <ion-label color="dark" style="padding-left: 16px" >Maximum Throughput: </ion-label>
+        <ion-text>
+          {{this.loadedCoaster.capacity}} riders/hr
+        </ion-text>
+      </ion-item>
+      <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCoaster.trains">
+        <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+          <ion-icon size="large" name="train"></ion-icon>
+        </ion-avatar>
+        <ion-label color="dark" style="padding-left: 16px" >Total Trains: </ion-label>
+        <ion-text>
+          {{this.loadedCoaster.trains}}
+        </ion-text>
+      </ion-item>
+      <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCoaster.cars">
+        <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+          <ion-icon size="large" name="car"></ion-icon>
+        </ion-avatar>
+        <ion-label color="dark" style="padding-left: 16px" >Cars Per Train: </ion-label>
+        <ion-text>
+          {{this.loadedCoaster.cars}}
+        </ion-text>
+      </ion-item>
+      <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCoaster.seats_per_car">
+        <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+          <ion-icon size="large" name="people"></ion-icon>
+        </ion-avatar>
+        <ion-label color="dark" style="padding-left: 16px" >Seats Per Car: </ion-label>
+        <ion-text>
+          {{this.loadedCoaster.seats_per_car}}
+        </ion-text>
+      </ion-item>
+    </ion-list>
+  </ion-content>

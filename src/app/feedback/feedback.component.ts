@@ -10,6 +10,7 @@ import { Keyboard } from '@capacitor/keyboard';
 import { IonicModule } from '@ionic/angular';
 
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 
 @Component({
@@ -18,7 +19,8 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./feedback.component.scss'],
   imports: [
     IonicModule,
-    FormsModule
+    FormsModule,
+    CommonModule
   ]
 })
 
@@ -27,6 +29,7 @@ export class FeedbackComponent implements OnInit {
   name: string = "";
   email: string = "";
   feedback: string = "";
+  showLoad: boolean = false
 
   constructor(
     private modalController: ModalController,
@@ -38,9 +41,6 @@ export class FeedbackComponent implements OnInit {
 
   ngOnInit() {}
 
-  
-  showLoad: boolean;
-
   dismiss() {
     // using the injected ModalController this page
     // can "dismiss" itself and optionally pass back data
@@ -51,20 +51,33 @@ export class FeedbackComponent implements OnInit {
 
   closeKeyboard(value: number) {
     if (value == 13) {
-      //alert(value)
       Keyboard.removeAllListeners();
-      Keyboard.hide().catch(e => console.log(e))
+      Keyboard.hide()
     }
   }
 
   submitClick() {
-    this.submitFeedback()
     this.showLoad = true;
     if (typeof this.feedback == "undefined" || this.feedback.length < 1) {
       this.showLoad = false
       this.alertCtrl.create({
         header: 'No Feedback!',
         message: "You must have something typed in the feedback section.",
+        buttons: [
+          {
+            text: "OK",
+            role: "cancel"
+          },
+        ]
+      }).then(alertEl => {
+        alertEl.present();
+      });
+    }
+    else if (this.email && this.email.length > 0 && !this.email.includes("@")) {
+      this.showLoad = false;
+      this.alertCtrl.create({
+        header: 'Not a valid email!',
+        message: "To get a response a valid email must be provided. Or optionally leave it blank.",
         buttons: [
           {
             text: "OK",

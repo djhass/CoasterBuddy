@@ -7,6 +7,7 @@ import { CoastersService } from '../coasters.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
+import { MainService } from '../main.service';
 
 @Component({
   selector: 'app-park-detail',
@@ -28,23 +29,40 @@ export class ParkDetailPage implements OnInit {
   private router: Router,
   public coastersService: CoastersService,
   private http: HttpClient,
+  public mainService: MainService,
   ) { 
     this.page = location.pathname.split('/')[1]
-  }
 
-  ngOnInit() {
-  	this.activatedRoute.paramMap.subscribe(paramMap => {
-  		if (!paramMap.has('parkname')) {
+    this.activatedRoute.paramMap.subscribe(paramMap => {
+  		if (!paramMap.has('parkid')) {
         // redirect
         return;
       }
-      this.parkName = paramMap.get('parkname');
-
-      this.parksService.parkRequest(this.parkName).subscribe(obj => {
-        this.loadedPark = obj[0]
-        this.setCoasters()
+      const parkid = paramMap.get('parkid');
+      console.log(parkid)
+      
+      this.getParkData(parkid).subscribe(obj => {
+        this.loadedPark = new Park(obj);
+        console.log(this.loadedPark)
       })
-  	});
+  })
+}
+
+getParkData(parkid) {
+  let url = `http://localhost:8080/park/${parkid}` //`https://server.coasterbuddy.app/api/park/${parkid}`
+  let httpHeaders = new HttpHeaders({
+    'accept': 'application/json',
+  })
+
+  let options = {
+      headers: httpHeaders
+  }
+
+  return this.http.get(url, options)
+}
+
+  ngOnInit() {
+
   }
 
   setCoasters() {
@@ -61,6 +79,14 @@ export class ParkDetailPage implements OnInit {
     window.open(this.loadedPark.website, '_system', 'location=yes'); return false;
   }
   maps() {
-    window.open("http://maps.apple.com/?q=" + this.loadedPark.name, '_system', 'location=yes'); return false;
+    if (this.mainService.settings.mapsService == "apple") {
+      window.open("http://maps.apple.com/?q=" + this.loadedPark.name, '_system', 'location=yes');
+    }
+    else if (this.mainService.settings.mapsService == "google") {
+      window.open("https://www.google.com/maps/search/?api=1&query=" + this.loadedPark.name, '_system', 'location=yes');
+    }
+    else if (this.mainService.settings.mapsService == "waze") {
+      window.open("https://www.waze.com/ul?query=" + this.loadedPark.name, '_system', 'location=yes');
+    }
   }
 }

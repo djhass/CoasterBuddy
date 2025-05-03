@@ -1,33 +1,58 @@
-ion-range {
-    --knob-size: 50px; 
-    --knob-background: transparent;
-    --knob-box-shadow: 0px;
-    --bar-height: 24px; 
-    --bar-background-active: rgb(0, 155, 0); 
-    padding-top: 55px;
-    pointer-events: none;
-    radius: 5px;
-    }
-      
-      ion-range::part(pin) {
-      
-        border-radius: 50%;
-        transform: scale(1.01);
-      
-        min-width: 50px;
-        height: 50px;
-    
-        font-size: 30px;
-    
-    
-      }
-    
-      ion-range::part(pin)::after {
-        content: "%";
-      }
-      
-    
-      
-    
-      
-      
+.hidden {
+  display: none; /* Toolbar is hidden initially */
+}
+.scroll-header {
+  transition: transform 0.3s ease-in-out, display 0.3s ease-in-out;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 10; /* Ensure it stays above content */
+}
+
+.large-toolbar-item-container {
+  position: absolute;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between; /* Evenly distribute space between items */
+  align-items: left; /* Align items vertically */
+  width: 93vw; /* Optional: Adjust container width */
+  padding-left:4px;
+}
+
+.large-toolbar-item {
+  text-align: center; /* Center text inside items */
+  display: flex;
+  flex-wrap: nowrap; /* Prevent wrapping */
+  align-items: center; /* Align items vertically */
+  justify-content: center; /* Align elements closer together */
+  display: inline-flex;
+  background-color: white;
+  color: black;
+  font-size: 18px;
+}
+
+.small-toolbar-item-container {
+  display: flex;
+  justify-content: space-between; /* Evenly distribute space between items */
+  align-items: center; /* Align items vertically */
+  width: 75vw; /* Optional: Adjust container width */
+}
+
+.small-toolbar-item {
+  flex: 1; /* Optional: Make items take equal space */
+  text-align: center; /* Center text inside items */
+  display: flex;
+  flex-wrap: nowrap; /* Prevent wrapping */
+  align-items: center; /* Align items vertically */
+  justify-content: center; /* Align elements closer together */
+  gap: 4px; /* Add spacing between elements */
+  height: 100%;
+  width:100%;
+  font-size: 24px;
+  --padding-start: 0; /* Remove default padding */
+  --inner-padding-start: 0; /* Remove inner padding */
+  --inner-padding-end: 0; /* Remove inner padding */
+  --border-width: 0; /* Remove borders if needed */
+  padding-left:28px;
+}
+

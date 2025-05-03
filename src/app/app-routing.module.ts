@@ -7,13 +7,13 @@ const routes: Routes = [
     path: 'home',
     children: [
       {
-      path: "",
-      loadChildren: () => import("./home/home.module").then(m =>  m.HomePageModule)
+        path: "",
+        loadChildren: () => import("./home/home.module").then(m =>  m.HomePageModule)
       },
       {
-      path: 'coaster/:coasterid',
-      pathMatch: 'prefix',
-      loadChildren: () => import("./coaster-detail/coaster-detail.module").then(m =>  m.CoasterDetailPageModule)
+        path: 'coaster/:coasterid',
+        pathMatch: 'prefix',
+        loadChildren: () => import("./coaster-detail/coaster-detail.module").then(m =>  m.CoasterDetailPageModule)
       },
       {
         path: 'credit/:coasterid',
@@ -21,10 +21,10 @@ const routes: Routes = [
         loadChildren: () => import("./credit-detail/credit-detail.module").then(m =>  m.CreditDetailPageModule)
       },
       {
-        path: 'park/:parkname',
+        path: 'park/:parkid',
         loadChildren: () => import("./park-detail/park-detail.module").then(m =>  m.ParkDetailPageModule)
         },{
-        path: 'manufacturer/:manName',
+        path: 'make/:makeid',
         loadChildren: () => import("./man-detail/man-detail.module").then(m =>  m.ManDetailPageModule)
         },
     ]
@@ -37,7 +37,7 @@ const routes: Routes = [
       loadChildren: () => import("./log/log.module").then(m =>  m.LogPageModule)
       },
       {
-      path: 'coaster/:coasterid',
+      path: 'ride/:coasterid',
       pathMatch: 'prefix',
       loadChildren: () => import("./coaster-detail/coaster-detail.module").then(m =>  m.CoasterDetailPageModule)
       },
@@ -50,7 +50,7 @@ const routes: Routes = [
       path: 'park/:parkname',
       loadChildren: () => import("./park-detail/park-detail.module").then(m =>  m.ParkDetailPageModule)
       },{
-      path: 'manufacturer/:manName',
+      path: 'make/:makeid',
       loadChildren: () => import("./man-detail/man-detail.module").then(m =>  m.ManDetailPageModule)
       },
       
@@ -80,7 +80,7 @@ const routes: Routes = [
       loadChildren: () => import("./database/database.module").then(m =>  m.DatabasePageModule)
       },
       {
-      path: 'coaster/:coasterid',
+      path: 'ride/:coasterid',
       pathMatch: 'prefix',
       loadChildren: () => import("./coaster-detail/coaster-detail.module").then(m =>  m.CoasterDetailPageModule)
       },
@@ -90,10 +90,10 @@ const routes: Routes = [
         loadChildren: () => import("./credit-detail/credit-detail.module").then(m =>  m.CreditDetailPageModule)
         },
       {
-      path: 'park/:parkname',
+      path: 'park/:parkid',
       loadChildren: () => import("./park-detail/park-detail.module").then(m =>  m.ParkDetailPageModule)
       },{
-      path: 'manufacturer/:manName',
+      path: 'make/:makeid',
       loadChildren: () => import("./man-detail/man-detail.module").then(m =>  m.ManDetailPageModule)
       },
       

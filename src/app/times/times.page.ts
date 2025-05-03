@@ -23,7 +23,6 @@ export class TimesPage implements OnInit {
     private locationService: LocationService,
     protected mainService: MainService
   ) {
-    console.log("Times Page")
     this.set()
    }
 
@@ -35,7 +34,6 @@ export class TimesPage implements OnInit {
       this.locationService.getCloseTimesParks(obj).then(obj => {
         this.closeParks = obj
       });
-      console.log(this.closeParks)
       this.loading = false;
     })
   }

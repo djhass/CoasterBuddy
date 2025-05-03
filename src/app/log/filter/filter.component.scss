@@ -10,7 +10,7 @@ ion-range {
 ion-range::part(pin) {
   
     border-radius: 50%;
-    transform: scale(1.01);
+    transform: scale(1.01) translateY(-20px);
   
     min-width: 5.924vh;
     height: 5.924vh;

@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Keyboard } from '@capacitor/keyboard';
-import { AdMobPlus, BannerAd, InterstitialAd, RewardedAd} from '@admob-plus/capacitor';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { settings, Filter } from './models.model'; 
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
@@ -9,6 +8,8 @@ import { CoastersService } from './coasters.service';
 import { ToastController } from '@ionic/angular';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { BehaviorSubject } from 'rxjs';
+import { Platform } from '@ionic/angular';
+
 
 SplashScreen.show({
   showDuration: 850,
@@ -21,7 +22,7 @@ SplashScreen.show({
 export class MainService {
 
   nativeAds: string[] = [];
-  public settings: settings = {units: "metric", appearance: "system"};
+  public settings: settings = new settings();
   private coastersService: CoastersService;
   private alertCtrl: AlertController;
   public filters: Filter;
@@ -30,8 +31,9 @@ export class MainService {
   constructor(
     private toastController: ToastController,
     private http: HttpClient,
+    private platform: Platform
   ) {
-
+    this.settings.mapsService = this.platform.is('ios') ? "apple" : "google";
       
     try {
       this.getUserData()
@@ -46,6 +48,12 @@ export class MainService {
 
   setComponentExited() {
       this.componentExitedSubject.next(true);
+  }
+
+  setMapService(option: string) {
+    this.settings.mapsService = option;
+
+    this.setUserData();
   }
 
   setDarkMode(option: String) {
@@ -95,30 +103,6 @@ export class MainService {
     await toast.present();
   }
 
-  async setAds() {
-    await AdMobPlus.requestTrackingAuthorization().catch(e => console.log(e))
-    let request = await this.http.get("https://server.coasterbuddy.app/api/advertisements") //localhost:8080/api/advertisements
-    request.subscribe(obj => {
-      for(var i in obj["natives"]) {
-        this.nativeAds.unshift(obj["natives"][i]);
-      }
-      if(obj["banners"]) {
-        console.log("banners")
-        async () => {
-          const banner = new BannerAd({
-            adUnitId: 'ca-app-pub-3940256099942544/2934735716', //real: ca-app-pub-8387175987712880/8205603241 test: ca-app-pub-3940256099942544/2934735716
-            position: 'bottom',
-          })
-          await banner.show()
-
-          AdMobPlus.addListener('banner.impression', async () => {
-            await banner.hide()
-          })
-        }
-      }
-    })
-  }
-
   setUserData() {
     Filesystem.writeFile({
       path: 'userdata.json',
@@ -137,7 +121,6 @@ export class MainService {
       }).then(obj => {
         this.settings = JSON.parse(obj.data as string);
         this.setDarkMode(this.settings.appearance);
-        this.setUserData();
       })
     }
     catch {
@@ -157,8 +140,8 @@ export class MainService {
     });
   }
 
-  setUnits(option: string) {
-    this.settings.units = option;
+  setUnits(option: boolean) {
+    this.settings.metric = option;
     this.setUserData();
   }
 

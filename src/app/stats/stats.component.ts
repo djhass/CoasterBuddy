@@ -78,29 +78,19 @@ export class StatsComponent implements OnInit {
     var tempList: Array<String> = [];
     // if park is not in tempList, push it
     for (var i = 0; i <this.coastersService.credit_list.length; i++) {
-      if (!tempList.includes(this.coastersService.credit_list[i]?.manufacturer?.name ?? "")) {
-        tempList.push(this.coastersService.credit_list[i]?.manufacturer?.name ?? "")
+      if (!tempList.includes(this.coastersService.credit_list[i]?.make?.name ?? "")) {
+        tempList.push(this.coastersService.credit_list[i]?.make?.name ?? "")
       }
     }
     return tempList.length
   }
 
-  findVisitedModels() {
-    var tempList: Array<String> = [];
-    // if park is not in tempList, push it
-    for (var i = 0; i <this.coastersService.credit_list.length; i++) {
-      if (!tempList.includes(this.coastersService.credit_list[i]?.seatingType?.name ?? "")) {
-        tempList.push(this.coastersService.credit_list[i]?.seatingType?.name ?? "")
-      }
-    }
-    return tempList.length
-  }
 
   findVisitedWood() {
     var amount = 0;
     // if park is not in tempList, push it
     for (var i = 0; i <this.coastersService.credit_list.length; i++) {
-      if (this.coastersService.credit_list[i]?.materialType?.name == "Wooden") {
+      if (this.coastersService.credit_list[i]?.material == "wood") {
         amount++;
       }
     }
@@ -111,26 +101,13 @@ export class StatsComponent implements OnInit {
     var amount = 0;
     // if park is not in tempList, push it
     for (var i = 0; i <this.coastersService.credit_list.length; i++) {
-      if (this.coastersService.credit_list[i]?.materialType?.name == "Steel") {
+      if (this.coastersService.credit_list[i]?.material == "steel") {
         amount++;
       }
     }
     return amount
   }
 
-  findTallestCoaster() {
-    var returnCoaster: Coaster = this.coastersService?.credit_list[0];
-    for (var i = 1; i < this.coastersService.credit_list.length; i++) {
-      var currentHeight = this.coastersService?.credit_list[i]?.height
-      if (!currentHeight) {
-        currentHeight = 0;
-      }
-      if (returnCoaster.height && (currentHeight > returnCoaster?.height)) {
-        returnCoaster = this.coastersService.credit_list[i]
-      }
-    }
-    return returnCoaster
-  }
 
   findTallyCoaster() {
     var returnCoaster: Credit = this.coastersService?.credit_list[0];

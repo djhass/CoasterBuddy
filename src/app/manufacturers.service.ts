@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
-import { Manufacturer } from './models.model';
+import { Make } from './models.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ManufacturersService {
 
-public manufacturers: Manufacturer[] = [
+public manufacturers: Make[] = [
 
 {name: "Intamin Amusement Rides"},
 {name: "Rocky Mountain Construction"},

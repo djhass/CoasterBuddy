@@ -6,7 +6,8 @@ import { ModalController } from '@ionic/angular';
 import { AlertController } from '@ionic/angular';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
-
+import { FormsModule } from '@angular/forms';
+import { LongPressDirective } from 'src/app/longpress.directive';
 
 
 @Component({
@@ -15,7 +16,9 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./settings.page.scss'],
   imports: [
     IonicModule,
-    CommonModule
+    CommonModule,
+    FormsModule,
+    LongPressDirective
   ],
   providers: [
     { provide: Date, useFactory: () => new Date() }
@@ -30,7 +33,7 @@ export class SettingsPage implements OnInit {
     public modalCtrl: ModalController,
     public alertCtrl: AlertController,
     public newDate: Date = new Date()
-  ) { 
+  ) {
   }
 
   ngOnInit() {
@@ -50,8 +53,8 @@ export class SettingsPage implements OnInit {
 
   clearData() {
     this.alertCtrl.create({
-          header: 'Are You Sure?',
-          message: 'You are about to clear all data.',
+          header: 'Delete All Data?',
+          message: 'This action cannot be undone.',
           buttons: [
           {
             text: 'Cancel',

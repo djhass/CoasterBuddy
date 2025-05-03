@@ -1,107 +1,409 @@
-<ion-header style="padding-top: 0px !important;">
-  <ion-toolbar style="padding-top: 20px !important;" color="light">
-  	<ion-buttons slot="start">
-  	    <ion-back-button defaultHref="/home" (click)="save()"></ion-back-button>
-  	</ion-buttons>
-    	
-    <h1 class="ion-text-center" style=" font-style: bold; font-size: 25px; padding-bottom: 10px;" >
-      {{this.loadedCredit?.name }}
+
+<ion-header class="scroll-header hidden">
+  <ion-toolbar>
+    <ion-buttons slot="start" style="padding-left: 8px;" >
+        <ion-back-button color="dark" defaultHref="/home" style="width: 62px;"></ion-back-button>
+    </ion-buttons>
+    <h1 class="ion-text-center" style="font-style: bold; font-size: 25px; font-weight: bold" >
+      {{ this.loadedCredit.name }}
     </h1>
-  	
-  	<ion-buttons slot="end">
-  	    <ion-button (click) = "openEditComponent()">
-  	    	Edit
-    	</ion-button>
-  	</ion-buttons>
-    
+    <ion-buttons slot="end" style="padding-right: 8px; width: 54px;">
+      <ion-button color="dark">
+        <ion-icon name="create"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-title size="large" style="text-align: left; padding-left: 0px !important; font-weight:200">
+      <ion-item style="--inner-padding-start: 0;" *ngIf="this.loadedCredit.image">
+        <ion-avatar style="height: 15vw; width:15vw;">
+          <ion-img [src]="this.shownImg || this.altImg" (ionError)="onImgFail()"></ion-img>
+        </ion-avatar>
+
+        <div class="small-toolbar-item-container" *ngIf="this.loadedCredit.status">
+          <div class="small-toolbar-item" *ngIf="this.loadedCredit.status.calculated_wait && this.loadedCredit.status.open">
+            <ion-icon name="hourglass-outline"></ion-icon>
+            <ion-label style="font-weight:bold">{{this.loadedCredit.status.calculated_wait}}</ion-label>
+          </div>
+          <div class="small-toolbar-item" *ngIf="!this.loadedCredit.status.open && !this.loadedCredit.status.testing && this.loadedCredit.status.standing && this.loadedCredit.status.operable">
+            <ion-label>Currently Closed</ion-label>
+          </div>
+          <div class="small-toolbar-item" *ngIf="this.loadedCredit.status.open && !this.loadedCredit.status.trains_on_track && !this.loadedCredit.status.operation_speed && !this.loadedCredit.status.posted_wait">
+            <ion-label>Operational</ion-label>
+          </div>
+          <div class="small-toolbar-item" *ngIf="this.loadedCredit.status.testing">
+            <ion-label>Testing</ion-label>
+          </div>
+          <div class="small-toolbar-item" *ngIf="!this.loadedCredit.status.operable && this.loadedCredit.status.standing">
+            <ion-label>Closed Indefinitely</ion-label>
+          </div>
+          <div class="small-toolbar-item" *ngIf="!this.loadedCredit.status.standing">
+            <ion-label>Removed</ion-label>
+          </div>
+          <div class="small-toolbar-item" *ngIf="(this.loadedCredit.status.open || this.loadedCredit.status.testing) && this.loadedCredit.status.trains_on_track && (!this.loadedCredit.status.posted_wait || !this.loadedCredit.status.calculated_wait || this.loadedCredit.status.testing)">
+            <ion-icon name="train"></ion-icon>
+            <ion-label *ngIf="this.loadedCredit.trains">{{ this.loadedCredit.status.trains_on_track }}/{{this.loadedCredit.trains}}</ion-label>
+            <ion-label *ngIf="!this.loadedCredit.trains">{{ this.loadedCredit.status.trains_on_track }}</ion-label>
+          </div>
+          <div class="small-toolbar-item" *ngIf="this.loadedCredit.status.open && this.loadedCredit.status.posted_wait">
+            <ion-icon name="time"></ion-icon>
+            <ion-label>{{ this.loadedCredit.status.posted_wait }}</ion-label>
+          </div>
+          <div class="small-toolbar-item" *ngIf="this.loadedCredit.status.open && this.loadedCredit.status.operation_speed && !this.loadedCredit.capacity">
+            <ion-icon name="people"></ion-icon>
+            <ion-label>{{this.loadedCredit.status.operation_speed}}</ion-label>
+          </div>
+          <div class="small-toolbar-item" *ngIf="this.loadedCredit.status.open && this.loadedCredit.status.operation_speed && this.loadedCredit.capacity">
+            <ion-icon name="people"></ion-icon>
+            <ion-label>{{Math.round(this.loadedCredit.status.operation_speed / this.loadedCredit.capacity * 100)}}%</ion-label>
+          </div>
+        </div>
+        
+      </ion-item>
+    </ion-title>
   </ion-toolbar>
 </ion-header>
 
-
-
-<ion-content color="transparent" scroll-y="true">
+<ion-content scrollEvents="true" (ionScroll)="handleScroll($event)">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-buttons slot="start" style="padding-left: 8px;">
+          <ion-back-button color="dark" defaultHref="/home" style="width: 62px;"></ion-back-button>
+      </ion-buttons>
+      <h1 class="ion-text-center" style="font-style: bold; font-size: 25px; font-weight: bold" >
+        {{this.loadedCredit.name }}
+      </h1>
+      <ion-buttons slot="end" style="padding-right: 8px; width: 54px;">
+        <ion-button color="dark">
+          <ion-icon name="create"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+    <ion-toolbar>
+      <ion-title size="small">
+        <div class="large-toolbar-item-container" *ngIf="this.loadedCredit.status">
+          <ion-chip class="large-toolbar-item" *ngIf="this.loadedCredit.status.calculated_wait && this.loadedCredit.status.open">
+            <ion-icon name="hourglass-outline" color="black"></ion-icon>
+            <ion-label style="font-weight:bold">{{this.loadedCredit.status.calculated_wait}} min</ion-label>
+          </ion-chip>
+          <ion-chip class="large-toolbar-item" style="background-color:var(--ion-color-danger); color:white" *ngIf="!this.loadedCredit.status.open && !this.loadedCredit.status.testing && this.loadedCredit.status.standing && this.loadedCredit.status.operable">
+            Currently Closed
+          </ion-chip>
+          <ion-chip class="large-toolbar-item" style="background-color:var(--ion-color-success)" *ngIf="this.loadedCredit.status.open && !this.loadedCredit.status.trains_on_track && !this.loadedCredit.status.operation_speed && !this.loadedCredit.status.posted_wait && !this.loadedCredit.status.calculated_wait">
+            Operational
+          </ion-chip>
+          <ion-chip class="large-toolbar-item" style="background-color:var(--ion-color-warning);" *ngIf="this.loadedCredit.status.testing">
+            Testing
+          </ion-chip>
+          <ion-chip class="large-toolbar-item" style="background-color:var(--ion-color-danger); color:white" *ngIf="!this.loadedCredit.status.operable && this.loadedCredit.status.standing">
+            Closed Indefinitely
+          </ion-chip>
+          <ion-chip class="large-toolbar-item" style="background-color:var(--ion-color-danger); color:white" *ngIf="!this.loadedCredit.status.standing">
+            Removed
+          </ion-chip>
+          <ion-chip class="large-toolbar-item" *ngIf="this.loadedCredit.status.posted_wait && this.loadedCredit.status.open">
+            <ion-icon name="time-outline" color="black"></ion-icon>
+            <ion-label>{{this.loadedCredit.status.posted_wait}} min posted</ion-label>
+          </ion-chip>
+          <ion-chip class="large-toolbar-item" *ngIf="this.loadedCredit.status.open && this.loadedCredit.status.operation_speed && !this.loadedCredit.capacity">
+            <ion-icon name="people-outline" color="black"></ion-icon>
+            <ion-label>{{this.loadedCredit.status.operation_speed}} riders/hr</ion-label>
+          </ion-chip>
+          <ion-chip class="large-toolbar-item" *ngIf="this.loadedCredit.status.open && this.loadedCredit.status.operation_speed && this.loadedCredit.capacity">
+            <ion-icon name="people-outline" color="black"></ion-icon>
+            <ion-label>{{Math.round(this.loadedCredit.status.operation_speed / this.loadedCredit.capacity * 100)}}% operation</ion-label>
+          </ion-chip>
+          <ion-chip class="large-toolbar-item" *ngIf="(this.loadedCredit.status.open || this.loadedCredit.status.testing) && this.loadedCredit.status.trains_on_track"> 
+            <ion-icon name="train-outline" color="black"></ion-icon>
+            <ion-label *ngIf="this.loadedCredit.trains">{{ this.loadedCredit.status.trains_on_track }}/{{this.loadedCredit.trains}} trains</ion-label>
+            <ion-label *ngIf="!this.loadedCredit.trains">{{ this.loadedCredit.status.trains_on_track }} train{{this.loadedCredit.status.trains_on_track > 1 ? 's' : ''}}</ion-label>
+          </ion-chip>
+        </div>
+        <ion-img [src]="this.shownImg || this.altImg" (ionError)="onImgFail()"></ion-img>
+      </ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <div style="
+    display: flex;
+    justify-content: space-between;
+    width: 93vw;
+    align-items: center;
+    padding-left:24px;
+    padding-bottom:8px;
+  ">
+    <ion-chip style="font-size: 20px; height:48px; padding-left:20px; padding-right:20px" (click)="openDatetimePicker()"> 
+      <ion-icon name="calendar" color="black"></ion-icon>
+      <ion-label>{{displayDate(this.loadedCredit.time)}}</ion-label>
+    </ion-chip>
+    <ion-chip style="font-size: 20px; height:48px; padding-left:20px; padding-right:20px" (click)="editTally ? '' : tally()" (longPress)="startEditingTally()"> 
+      <ion-icon name="clipboard" color="black"></ion-icon>
+      <ion-label style="display: flex; justify-content: center; align-items: center;" *ngIf="!editTally">
+        <ion-icon name="add"></ion-icon>{{this.loadedCredit.tally}}
+      </ion-label>
+      <ion-input #autoFocusInput style="width: 40px;" *ngIf="editTally" [(ngModel)]="this.loadedCredit.tally" type="number" (ionBlur)="stopEditingTally()" (keyup.enter)="stopEditingTally()"></ion-input>
+    </ion-chip>
+  </div>
   
-<ion-img style="height: 34.7156vh;" [src]="coastersService.getCoasterLargeImage(loadedCredit.mainImage)"></ion-img>
-  
 
- <ion-item lines="none" style="border-bottom: none !important; pointer-events: none;">
-  <ion-chip style="width: 45%; height: 4.739vh;">
-    <ion-icon color="medium" size="large" name="speedometer"></ion-icon>
-    <ion-label style="font-size: 24px;">
-      {{ Math.round(this.loadedCredit?.speed * (this.mainService.settings.units == "imperial" ? 0.621371 : 1)) }}
-    </ion-label> 
-    <ion-label style="font-size: 24px;" *ngIf="this.mainService.settings.units != 'metric'">
-      &nbsp;km/h
-    </ion-label> 
-    <ion-label style="font-size: 24px;" *ngIf="this.mainService.settings.units != 'imperial'">
-      &nbsp;mph
-    </ion-label>
-  </ion-chip>
-  
-  <ion-chip style="width: 45%; height: 4.739vh; pointer-events: none;">
-    <ion-icon color="medium" style="width: 25px; height: 25px;" src="./assets/icon/Ruler-04.svg"></ion-icon>
-    <ion-label style="font-size: 24px; padding-left:8%;" >{{ Math.round(this.loadedCredit?.height * (this.mainService.settings.units == "imperial" ? 3.280839895 : 1)) }}</ion-label> <ion-label style="font-size: 24px;" *ngIf="this.mainService.settings.units == 'metric'">&nbsp;m</ion-label> <ion-label style="font-size: 24px;" *ngIf="this.mainService.settings.units == 'imperial'">&nbsp;ft</ion-label>
-    <!--
-    <ion-icon style="width: 25px; height: 25px; color: #BEC2CB; position: absolute; top: 50%; left: 50px; transform: translate(0, 0%)" name="star" [hidden]="this.loadedCredit.height < 60.96 || this.loadedCredit.height > 91.44"></ion-icon>
-    <ion-icon style="width: 25px; height: 25px; color: #FFD700  position: absolute; top: 50%; left: 50px; transform: translate(0, 0%)" name="star" [hidden]="60.96 && this.loadedCredit.height < 91.44"></ion-icon>
-    <ion-icon style="width: 25px; height: 25px;" name="star-outline" [hidden]="this.loadedCredit.height > 60.96"></ion-icon>
-    -->
-  </ion-chip>
-</ion-item>
-<ion-item lines="none" style="border-bottom: none !important; pointer-events: none;">
-  <ion-chip style="width: 45%; height: 4.739vh;">
-      <ion-icon color="medium" size="large" src="./assets/icon/loop.svg"></ion-icon>
-    <ion-label style="font-size: 24px; padding-left:20%;">{{ this.loadedCredit?.inversionsNumber }}</ion-label>
-  </ion-chip>
-  
-  <ion-chip style="width: 45%; height: 4.739vh; pointer-events: none;">
-    <ion-icon color="medium" style="width: 25px; height: 25px;" src="./assets/icon/tracksvg.svg"></ion-icon>
-    <ion-label style="font-size: 24px; padding-left:8%;">{{ Math.round(this.loadedCredit?.length * (this.mainService.settings.units == "imperial" ? 3.280839895 : 1)) }}</ion-label> <ion-label style="font-size: 24px;" *ngIf="this.mainService.settings.units == 'metric'">&nbsp;m</ion-label> <ion-label style="font-size: 24px;" *ngIf="this.mainService.settings.units == 'imperial'">&nbsp;ft</ion-label>
-  </ion-chip>
-</ion-item>
-<ion-item lines="none" class="ion-text-center" style="border-bottom: none !important; pointer-events: none;">
-  <ion-chip style="width: 45%; height: 4.739vh;">
-    <ion-label style="font-size: 24px; width: 100vw;">{{ this.loadedCredit?.seatingType?.name }}</ion-label>
-  </ion-chip>
-  
-  <ion-chip style="width: 45%; height: 4.739vh;">
-    <ion-label style="font-size: 24px; width: 100vw;">{{ this.loadedCredit?.materialType?.name }}</ion-label>
-  </ion-chip>
-</ion-item>
+  <div style="display: flex; justify-content: center; width: 100vw; overflow:hidden;">
+    <ion-card style="background-color: var(--ion-color-light); width: 45vw; height: 35vw; display: flex; justify-content: center; align-items: center; text-align: center;" *ngIf="this.loadedCredit.park">
+      <ion-grid>
+        <ion-row style="display: flex; justify-content: center;" *ngIf="this.loadedCredit.name">
+          <ion-text style="font-weight: bold; font-size: 24px; color: var(--ion-color-dark)">{{this.loadedCredit.park.short_name ? this.loadedCredit.park.short_name : this.loadedCredit.park.name}}</ion-text>
+        </ion-row>
+        <br>
+        <ion-row style="display: flex; justify-content: center;" *ngIf="this.loadedCredit.park && this.loadedCredit.park.parent && this.loadedCredit.park.parent.name">
+          <ion-text style="font-size: 18px; color: var(--ion-color-medium)">{{this.loadedCredit.park.parent.short_name ? this.loadedCredit.park.parent.short_name : this.loadedCredit.park.parent.name}}</ion-text>
+        </ion-row>
+      </ion-grid>
+    </ion-card>
+    <ion-card *ngIf="this.loadedCredit.make" style="background-color: var(--ion-color-light); width: 45vw; height: 35vw; display: flex; justify-content: center; align-items: center; text-align: center;">
+      <ion-grid>
+        <ion-row style="display: flex; justify-content: center;" *ngIf="this.loadedCredit.make.name">
+          <ion-text style="font-weight: bold; font-size: 24px; color: var(--ion-color-dark)">{{this.loadedCredit.make.short_name ? this.loadedCredit.make.short_name : this.loadedCredit.make.name}}</ion-text>
+        </ion-row>
+        <br>
+        <ion-row style="display: flex; justify-content: center;" *ngIf="this.loadedCredit.make.country">
+          <ion-text style="font-size: 18px; color: var(--ion-color-medium)">{{this.loadedCredit.make.country}}</ion-text>
+        </ion-row>
+      </ion-grid>
+    </ion-card>
+  </div>
 
-<ion-grid>
-  <ion-row class="ion-align-items-center">
-    <ion-col size="12" class="ion-text-center">
-      <ion-button [routerLink]="['/' + this.page + '/park/', this.loadedCredit?.park?.name]" color="transparent" style="height: 8.7678vh; width: 43vh; background-image: url('./assets/Buttons/Park Button.svg'); background-size:cover;">
-        <ion-text style="font-size: 5vw; font-weight:600; overflow:hidden; width: 85%; color: black">
-          {{ this.loadedCredit?.park?.name }}
-        </ion-text>
-      </ion-button>
-
-      <ion-button [routerLink]="['/' + this.page + '/manufacturer/', this.loadedCredit?.manufacturer?.name]" color="transparent" style="height: 8.7678vh; width: 43vh; background-image: url('./assets/Buttons/Manufacturer Button.svg'); background-size:cover;">
-        <ion-text style="font-size: 5vw; font-weight:600; overflow:hidden; width: 85%; color: black">
-          {{ this.loadedCredit?.manufacturer?.name }}
-        </ion-text>
-      </ion-button>
-    </ion-col>
-  </ion-row>
-</ion-grid>
-
-<ion-item lines="none" class="ion-text-center" style="border-bottom: none !important;">
-  <ion-chip style="width: 48%; height: 40px;">
-    <ion-icon color="medium" size="large" name="calendar"></ion-icon>
-    <ion-datetime disabled = "false" display-format="MM/DD/YY" picker-format="MM/DD/YYYY h:mm A" placeholder="Enter Time Ridden" [(ngModel)]="this.loadedCredit.time" style="font-size: 20px; font-style: bold; padding: 0px;"></ion-datetime>
-  </ion-chip>
-  
-  <ion-chip (click)="$event.stopPropagation()" style="width: 48%; height: 40px;">
-    <ion-icon color="medium" size="large" name="clipboard"></ion-icon>
-    <ion-input (click)="$event.stopPropagation()" type="number" style="font-size: 20px; font-style: bold;" [(ngModel)]="this.loadedCredit.tally" disabled = "false"></ion-input>
-    <ion-buttons>
-      <ion-button (click)="tally(); $event.stopPropagation()">
-        <ion-icon name="add" slot="icon-only"></ion-icon>
-      </ion-button>
-    </ion-buttons>  
-  </ion-chip>
-</ion-item>
-    
+  <ion-card style="background-color:transparent" *ngIf="this.loadedCredit.models && this.loadedCredit.models.length ">
+    <ion-card-title style="display: flex; justify-content: center;">
+      <ion-text style="font-size: 20px;">
+        Models
+      </ion-text>
+    </ion-card-title>
+    <ion-card-content>
+      <ion-list>
+        <ion-chip style="height: 55px; font-size: 20px;" *ngFor="let model of this.loadedCredit.models">
+          {{model}}
+        </ion-chip>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+  <ion-card style="background-color:transparent" *ngIf="this.loadedCredit.tags && this.loadedCredit.tags.length > 0">
+    <ion-card-title style="display: flex; justify-content: center;">
+      <ion-text style="font-size: 20px;">
+        Tags
+      </ion-text>
+    </ion-card-title>
+    <ion-card-content>
+      <ion-list>
+        <ion-chip style="height: 45px; font-size: 20px;" *ngFor="let tag of this.loadedCredit.tags">
+          {{tag}}
+        </ion-chip>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+  <ion-card style="background-color:transparent" *ngIf="this.loadedCredit.description">
+    <ion-card-title style="display: flex; justify-content: center;">
+      <ion-text style="font-size: 20px;">
+        Description
+      </ion-text>
+    </ion-card-title>
+    <ion-card-content>
+      <ion-text style="color: white; font-size: 18px;">
+        {{this.loadedCredit.description}}
+      </ion-text>
+    </ion-card-content>
+  </ion-card>
+  <ion-card style="background-color:transparent" *ngIf="this.loadedCredit.records && this.loadedCredit.records.length > 0">
+    <ion-card-title style="display: flex; justify-content: center;">
+      <ion-text style="font-size: 20px;">
+        Records
+      </ion-text>
+    </ion-card-title>
+    <ion-card-content>
+      <ion-list>
+        <ion-chip style="height: 55px; font-size: 20px;" *ngFor="let record of this.loadedCredit.records">
+          {{record.type}} {{record.specifier}} in the {{record.span}}
+        </ion-chip>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+  <br>
+  <ion-item>
+    <ion-chip slot="end" style="height:38px;">
+      <ion-select label="Units:" [(ngModel)]="this.useMetric">
+        <ion-select-option [value]="true">Metric <div *ngIf="this.loadedCredit.prefersMetric">(Preferred)</div></ion-select-option>
+        <ion-select-option [value]="false">Imperial <div *ngIf="!this.loadedCredit.prefersMetric">(Preferred)</div></ion-select-option>
+      </ion-select>
+    </ion-chip>
+  </ion-item>
+  <ion-list style="padding-bottom: 24px;">
+    <ion-item style="font-size:18px;" *ngIf="this.loadedCredit.max_speed && (this.loadedCredit.max_speed.imperial || this.loadedCredit.max_speed.metric)">
+      <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+        <ion-icon size="large" name="speedometer"></ion-icon>
+      </ion-avatar>
+      <ion-label color="dark" style="padding-left: 16px" >Maximum Speed: </ion-label>
+      <ion-text *ngIf="this.loadedCredit.max_speed.imperial && (!this.loadedCredit.max_speed.metric || !this.useMetric)">
+        {{this.loadedCredit.max_speed.imperial}} mph
+      </ion-text>
+      <ion-text *ngIf="this.loadedCredit.max_speed.metric && (!this.loadedCredit.max_speed.imperial || this.useMetric)">
+        {{this.loadedCredit.max_speed.metric}} km/h
+      </ion-text>
+    </ion-item>
+    <ion-item style="font-size:18px;" *ngIf="this.loadedCredit.max_acceleration && (this.loadedCredit.max_acceleration.imperial || this.loadedCredit.max_acceleration.metric)">
+      <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+        <ion-icon name="play-forward-outline" size="large"></ion-icon>
+      </ion-avatar>
+      <ion-label color="dark" style="padding-left: 16px" >Maximum Acceleration: </ion-label>
+      <ion-text *ngIf="this.loadedCredit.max_acceleration.imperial && (!this.loadedCredit.max_acceleration.metric || !this.useMetric)">
+        {{this.loadedCredit.max_acceleration.imperial}} ft/s²
+      </ion-text>
+      <ion-text *ngIf="this.loadedCredit.max_acceleration.metric && (!this.loadedCredit.max_acceleration.imperial || this.useMetric)">
+        {{this.loadedCredit.max_acceleration.metric}} m/s²
+      </ion-text>
+    </ion-item>
+      <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCredit.max_height && (this.loadedCredit.max_height.imperial || this.loadedCredit.max_height.metric)">
+      <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+        <ion-icon size="large" src="./assets/icon/Ruler-04.svg"></ion-icon>
+      </ion-avatar>
+      <ion-label color="dark" style="padding-left: 16px" >Maximum Height: </ion-label>
+      <ion-text *ngIf="this.loadedCredit.max_height.imperial && (!this.loadedCredit.max_height.metric || !this.useMetric)">
+        {{this.loadedCredit.max_height.imperial}} feet 
+      </ion-text>
+      <ion-text *ngIf="this.loadedCredit.max_height.metric && (!this.loadedCredit.max_height.imperial || this.useMetric)">
+        {{this.loadedCredit.max_height.metric}} meters
+      </ion-text>
+    </ion-item>
+    <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCredit.drop_height && (this.loadedCredit.drop_height.imperial || this.loadedCredit.drop_height.metric)">
+      <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+        <ion-icon size="large" name="chevron-down"></ion-icon>
+      </ion-avatar>
+      <ion-label color="dark" style="padding-left: 16px" >Drop Height: </ion-label>
+      <ion-text *ngIf="this.loadedCredit.drop_height.imperial && (!this.loadedCredit.drop_height.metric || !this.useMetric)">
+        {{this.loadedCredit.drop_height.imperial}} feet
+      </ion-text>
+      <ion-text *ngIf="this.loadedCredit.drop_height.metric && (!this.loadedCredit.drop_height.imperial || this.useMetric)">
+        {{this.loadedCredit.drop_height.metric}} meters
+      </ion-text>
+    </ion-item>
+    <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCredit.length && (this.loadedCredit.length.imperial || this.loadedCredit.length.metric)">
+      <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+        <ion-icon size="large" src="./assets/icon/tracksvg.svg"></ion-icon>
+      </ion-avatar>
+      <ion-label color="dark" style="padding-left: 16px" >Track Length: </ion-label>
+      <ion-text *ngIf="this.loadedCredit.length.imperial && (!this.loadedCredit.length.metric || !this.useMetric)">
+        {{this.loadedCredit.length.imperial}} feet
+      </ion-text>
+      <ion-text *ngIf="this.loadedCredit.length.metric && (!this.loadedCredit.length.imperial || this.useMetric)">
+        {{this.loadedCredit.length.metric}} kilometers
+      </ion-text>
+    </ion-item>
+    <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCredit.inversions || this.loadedCredit.inversions == 0">
+      <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+        <ion-icon size="large" src="./assets/icon/loop.svg"></ion-icon>
+      </ion-avatar>
+      <ion-label color="dark" style="padding-left: 16px" >Inversions: </ion-label>
+      <ion-text>
+        {{this.loadedCredit.inversions}}
+      </ion-text>
+    </ion-item>
+    <ion-item style="font-size:18px;" *ngIf="this.loadedCredit.duration">
+      <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+        <ion-icon size="large" name="stopwatch"></ion-icon>
+      </ion-avatar>
+      <ion-label color="dark" style="padding-left: 16px" >Duration: </ion-label>
+      <ion-text>
+        {{Math.round(this.loadedCredit.duration / 60)}}:{{(this.loadedCredit.duration % 60).toString().padStart(2, '0')}} minutes
+      </ion-text>      
+    </ion-item>
+    <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCredit.material">
+      <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+        <ion-icon size="large" name="server"></ion-icon>
+      </ion-avatar>
+      <ion-label color="dark" style="padding-left: 16px" >Material: </ion-label>
+      <ion-text>
+        {{this.loadedCredit.material}}
+      </ion-text>
+    </ion-item>
+    <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCredit.propulsion">
+      <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+        <ion-icon size="large" name="rocket"></ion-icon>
+      </ion-avatar>
+      <ion-label color="dark" style="padding-left: 16px" >Propulsion Type: </ion-label>
+      <ion-text>
+        {{this.loadedCredit.propulsion}}
+      </ion-text>
+    </ion-item>
+    <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCredit.opened">
+      <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+        <ion-icon size="large" name="calendar"></ion-icon>
+      </ion-avatar>
+      <ion-label color="dark" style="padding-left: 16px" >Date Opened: </ion-label>
+      <ion-text>
+        {{this.displayDate(this.loadedCredit.opened)}}
+      </ion-text>
+    </ion-item>
+    <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCredit.closed">
+      <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+        <ion-icon size="large" name="calendar"></ion-icon>
+      </ion-avatar>
+      <ion-label color="dark" style="padding-left: 16px" >Date Closed: </ion-label>
+      <ion-text>
+        {{this.displayDate(this.loadedCredit.closed)}}
+      </ion-text>
+    </ion-item>
+    <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCredit.capacity">
+      <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+        <ion-icon size="large" name="send"></ion-icon>
+      </ion-avatar>
+      <ion-label color="dark" style="padding-left: 16px" >Maximum Throughput: </ion-label>
+      <ion-text>
+        {{this.loadedCredit.capacity}} riders/hr
+      </ion-text>
+    </ion-item>
+    <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCredit.trains">
+      <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+        <ion-icon size="large" name="train"></ion-icon>
+      </ion-avatar>
+      <ion-label color="dark" style="padding-left: 16px" >Total Trains: </ion-label>
+      <ion-text>
+        {{this.loadedCredit.trains}}
+      </ion-text>
+    </ion-item>
+    <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCredit.cars">
+      <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+        <ion-icon size="large" name="car"></ion-icon>
+      </ion-avatar>
+      <ion-label color="dark" style="padding-left: 16px" >Cars Per Train: </ion-label>
+      <ion-text>
+        {{this.loadedCredit.cars}}
+      </ion-text>
+    </ion-item>
+    <ion-item lines="full" style="font-size:18px;" *ngIf="this.loadedCredit.seats_per_car">
+      <ion-avatar style="display: flex; justify-content: center; align-items: center; text-align: center;">
+        <ion-icon size="large" name="people"></ion-icon>
+      </ion-avatar>
+      <ion-label color="dark" style="padding-left: 16px" >Seats Per Car: </ion-label>
+      <ion-text>
+        {{this.loadedCredit.seats_per_car}}
+      </ion-text>
+    </ion-item>
+  </ion-list>
 </ion-content>
+
+<ion-popover [isOpen]="isDatetimeOpen" style="--width: 350px">
+  <ng-template>
+    <ion-datetime
+      [(ngModel)]="this.loadedCredit.time"
+      (ionChange)="coastersService.set(this.loadedCredit.id, {time: this.loadedCredit.time})"
+      id="inputParkOpenDate"
+      min="1800-01-01"
+      presentation="date-time"
+      [formatOptions]="{
+        date: {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit'
+        }
+      }"
+    ></ion-datetime>
+  </ng-template>
+</ion-popover>

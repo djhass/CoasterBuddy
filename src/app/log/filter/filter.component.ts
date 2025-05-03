@@ -1,7 +1,7 @@
 import { Component, OnInit, EventEmitter } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { CoastersService } from 'src/app/coasters.service';
-import { Credit, Filter, Range, StatusesOptions, MaterialsOptions } from 'src/app/models.model';
+import { Credit, Park, Filter, Range, UnitObj, Make } from 'src/app/models.model';
 import { MainService } from 'src/app/main.service';
 import { LogPage } from 'src/app/log/log.page';
 import { IonicModule } from '@ionic/angular'; // Import IonicModule for Ionic components
@@ -9,6 +9,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import * as _ from 'lodash';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-filter',
@@ -17,7 +18,8 @@ import * as _ from 'lodash';
   imports: [
     IonicModule,
     RouterModule,
-    FormsModule
+    FormsModule,
+    CommonModule
   ]
 })
 
@@ -30,8 +32,8 @@ export class FilterComponent implements OnInit {
   earliestDate: Date;
   currentDate: Date;
   models: Array<String>;
-  parks: Array<String>;
-  manufacturers: Array<String>;
+  parks: Array<Park>;
+  makes: Array<Make>;
   topSpeed: number;
   topHeight: number;
   topLength: number;
@@ -41,7 +43,6 @@ export class FilterComponent implements OnInit {
 
   filters: Filter;
 
-  test: Range;
 
   constructor(
     private modalController: ModalController,
@@ -50,13 +51,11 @@ export class FilterComponent implements OnInit {
   ) { 
 
     this.credit_list = [...this.coastersService.credit_list];
-    this.settings = this.mainService.settings;
     this.getMaxTally();
     this.getOldestDate();
     this.currentDate = new Date();
-    this.parks = this.coastersService.parksInCredits();
-    this.manufacturers = this.coastersService.manufacturersInCredits();
-    this.models = this.coastersService.typesInCredits()
+    this.parks = this.coastersService.parksInCredits().filter(obj => {return obj.id})
+    this.makes = this.coastersService.manufacturersInCredits().filter(obj => {return obj.id})
     this.setTopValues();
 
     this.initializeFilters();
@@ -67,9 +66,6 @@ export class FilterComponent implements OnInit {
     if (this.mainService.initialFilterObj) {
       this.initialFilterObj = _.cloneDeep(this.mainService.initialFilterObj);
     }
-
-    console.log(this.earliestDate)
-    
   }
 
   ngOnInit() {
@@ -105,15 +101,100 @@ export class FilterComponent implements OnInit {
   }
 
   setTopValues() {
-    if (this.settings.units == "imperial") { //imperial units
-      this.topSpeed = 150; //mph
-      this.topHeight = 456; //ft
-      this.topLength = 8140; //ft
+    if (this.mainService.settings.metric) { //metric units
+      this.topSpeed = 80; //km/h
+      this.topHeight = 30; //m
+      this.topLength = 300; //m
     }
     else {
-      this.topSpeed = 240; //km/h
-      this.topHeight = 140; //m
-      this.topLength = 2480; //m
+      this.topSpeed = 50; //mph
+      this.topHeight = 100; //ft
+      this.topLength = 1000; //ft
+    }
+    for (let i = 0; i < this.coastersService.fullSortedList.length; i++) {
+      let credit = this.coastersService.fullSortedList[i];
+      let speed, height, length = 0
+
+      //extract values
+      if (this.mainService.settings.metric) { //if metric
+        //speed
+        if (credit.max_speed.metric) {
+          speed = credit.max_speed.metric
+        }
+        else if (credit.max_speed.imperial) {
+          speed = Math.round(credit.max_speed.imperial / 0.621371)
+        }
+        else {
+          speed = 0;
+        }
+
+        //height
+        if (credit.max_height.metric) {
+          height = credit.max_height.metric
+        }
+        else if (credit.max_height.imperial) {
+          height = Math.round(credit.max_height.imperial / 3.280839895)
+        }
+        else {
+          height = 0;
+        }
+
+        //length
+        if (credit.length.metric) {
+          length = credit.length.metric
+        }
+        else if (credit.length.imperial) {
+          length = Math.round(credit.length.imperial / 3.280839895)
+        }
+        else {
+          length = 0;
+        }
+      }
+      else { //if imperial
+        //speed
+        if (credit.max_speed.imperial) {
+          speed = credit.max_speed.imperial
+        }
+        else if (credit.max_speed.metric) {
+          speed = Math.round(credit.max_speed.metric * 0.621371)
+        }
+        else {
+          speed = 0;
+        }
+
+        //height
+        if (credit.max_height.imperial) {
+          height = credit.max_height.imperial
+        }
+        else if (credit.max_height.metric) {
+          height = Math.round(credit.max_height.metric * 3.280839895)
+        }
+        else {
+          height = 0;
+        }
+
+        //length
+        if (credit.length.imperial) {
+          length = credit.length.imperial
+        }
+        else if (credit.length.metric) {
+          length = Math.round(credit.length.metric * 3.280839895)
+        }
+        else {
+          length = 0;
+        }
+      }
+
+      //if values larger, make them the new limit
+      if (speed > this.topSpeed) {
+        this.topSpeed = speed;
+      }
+      if (height > this.topHeight) {
+        this.topHeight = height;
+      }
+      if (length > this.topLength) {
+        this.topLength = length;
+      }
     }
   }
 
@@ -123,16 +204,23 @@ export class FilterComponent implements OnInit {
     this.filters.heightRange = new Range(0, this.topHeight);
     this.filters.lengthRange = new Range(0, this.topLength);
     this.filters.inversionRange = new Range(0, 14);
-    this.filters.popularityRange = new Range(1,100);
     this.filters.tallyRange = new Range(0, this.maxTally);
     this.filters.dateRange = {lower: this.earliestDate.toISOString(), upper: new Date().toISOString()};
     this.filters.keepEmptyTallys = true;
     this.filters.keepEmptyDates = true;
-    this.filters.materialsOptions = new MaterialsOptions();
-    this.filters.statusesOptions = new StatusesOptions();
-    this.filters.parks = this.parks;
-    this.filters.manufacturers = this.manufacturers;
+    this.filters.parks = this.parks.map(park => park.id);
+    this.filters.makes = this.makes.map(make => make.id);
     this.filters.models = this.models;
+    this.filters.statusesOptions = {
+      defunct: true,
+      standing: true,
+      operable: true
+    };
+    this.filters.materialsOptions = {
+      wood: true,
+      steel: true,
+      hybrid: true
+    };
     this.initialFilterObj = _.cloneDeep(this.filters); //sets all the same values to comparison object
   }
 
@@ -155,48 +243,54 @@ export class FilterComponent implements OnInit {
     this.closeModal();
   }
 
+  getValue(obj: UnitObj, factor: number) {
+    if (this.mainService.settings.metric) {
+      if (obj.metric) {
+        return obj.metric
+      }
+      else if (obj.imperial) {
+        return  Math.round(obj.imperial / factor);
+      }
+      else {
+        return NaN
+      }
+    }
+    else {
+      if (obj.imperial) {
+        return obj.imperial
+      }
+      else if (obj.metric) {
+        return  Math.round(obj.metric * factor);
+      }
+      else {
+        return NaN
+      }
+    }
+  }
+
   applyFilters() {
-
-    let adjustedSpeedRange = _.cloneDeep(this.filters.speedRange);
-    let adjustedheightRange = _.cloneDeep(this.filters.heightRange);
-    let adjustedlengthRange = _.cloneDeep(this.filters.lengthRange);
-
-    adjustedSpeedRange.lower /= (this.mainService.settings.units == "imperial" ? 0.621371 : 1);
-    adjustedSpeedRange.upper /= (this.mainService.settings.units == "imperial" ? 0.621371 : 1);
-    adjustedheightRange.lower /= (this.mainService.settings.units == "imperial" ? 3.280839895 : 1);
-    adjustedheightRange.upper /= (this.mainService.settings.units == "imperial" ? 3.280839895 : 1); //3.280575539
-    adjustedlengthRange.lower /= (this.mainService.settings.units == "imperial" ? 3.280839895 : 1);
-    adjustedlengthRange.upper /= (this.mainService.settings.units == "imperial" ? 3.280839895 : 1);
-
-    adjustedSpeedRange.lower = Math.round(adjustedSpeedRange.lower);
-    adjustedSpeedRange.upper = Math.round(adjustedSpeedRange.upper);
-    adjustedheightRange.lower = Math.round(adjustedheightRange.lower);
-    adjustedheightRange.upper = Math.round(adjustedheightRange.upper);
-    adjustedlengthRange.lower = Math.round(adjustedlengthRange.lower);
-    adjustedlengthRange.upper = Math.round(adjustedlengthRange.upper);
 
     this.coastersService.displayCreditList = [...this.coastersService.fullSortedList];
 
     this.coastersService.displayCreditList = this.coastersService.displayCreditList.filter(credit => {
+
       return (
-        (isNaN(credit.speed) || ((adjustedSpeedRange.lower <= credit.speed) && (credit.speed <= adjustedSpeedRange.upper))) && 
-        (isNaN(credit.height) || ((adjustedheightRange.lower <= credit.height) && (credit.height <= adjustedheightRange.upper))) &&
-        (isNaN(credit.length) || ((adjustedlengthRange.lower <= credit.length) && (credit.length <= adjustedlengthRange.upper))) &&
-        (isNaN(credit.inversionsNumber) || ((this.filters.inversionRange.lower <= credit.inversionsNumber) && (credit.inversionsNumber <= this.filters.inversionRange.upper))) &&
-        (!credit.score || ((this.filters.popularityRange.lower <= Math.round(parseFloat(credit.score))) && (Math.round(parseFloat(credit.score)) <= this.filters.popularityRange.upper))) &&
+        (isNaN(this.getValue(credit.max_speed, 0.621371)) || ((this.filters.speedRange.lower <= this.getValue(credit.max_speed, 0.621371)) && (this.getValue(credit.max_speed, 0.621371) <= this.filters.speedRange.upper))) && 
+        (isNaN(this.getValue(credit.max_height, 3.280839895)) || ((this.filters.heightRange.lower <= this.getValue(credit.max_height, 3.280839895)) && (this.getValue(credit.max_height, 3.280839895) <= this.filters.heightRange.upper))) &&
+        (isNaN(this.getValue(credit.length, 3.280839895)) || ((this.filters.lengthRange.lower <= this.getValue(credit.length, 3.280839895)) && (this.getValue(credit.length, 3.280839895) <= this.filters.lengthRange.upper))) &&
+        (isNaN(credit.inversions) || ((this.filters.inversionRange.lower <= credit.inversions) && (credit.inversions <= this.filters.inversionRange.upper))) &&
         (isNaN(credit.tally) || ((this.filters.tallyRange.lower <= credit?.tally) && (credit?.tally <= this.filters.tallyRange.upper))) &&
         ((this.filters.keepEmptyTallys) || !(!credit.tally)) &&
         ((!credit.time || (new Date(this.filters.dateRange.lower) <= new Date(credit.time)) && (new Date(credit.time) <= new Date(this.filters.dateRange.upper)))) &&
         ((this.filters.keepEmptyDates) || !(!credit.time)) &&
-        (((this.filters.materialsOptions.wood) && (credit.materialType.name == "Wooden")) ||
-          ((this.filters.materialsOptions.steel) && (credit.materialType.name == "Steel")) ||
-          ((this.filters.materialsOptions.hybrid) && ((credit.materialType.name != "Wooden") && credit.materialType.name != "Steel"))) &&
-        (((this.filters.statusesOptions.defunct) && (credit.status.name == "status.closed.definitely")) ||
-          ((this.filters.statusesOptions.operating) && (credit.status.name == "status.operating")) ||
-          ((this.filters.statusesOptions.standing) && ((credit.status.name != "status.closed.definitely") && credit.status.name != "status.operating"))) &&
-        (!credit.park || (this.filters.parks.includes(credit.park.name))) &&
-        (!credit.manufacturer || (this.filters.manufacturers.includes(credit.manufacturer.name))) &&
-        (!credit.seatingType || (this.filters.models.includes(credit.seatingType.name)))
+        (((this.filters.materialsOptions.wood) && (credit.material.toLowerCase().includes("wood"))) ||
+          ((this.filters.materialsOptions.steel) && (credit.material.toLowerCase().includes("steel"))) ||
+          ((this.filters.materialsOptions.hybrid) && (credit.material.toLowerCase().includes("hybrid")))) &&
+        (((this.filters.statusesOptions.operable) && (credit.status.operable)) ||
+          ((this.filters.statusesOptions.standing) && (credit.status.standing)) ||
+          ((this.filters.statusesOptions.defunct) && (!(credit.status.operable) && !(credit.status.standing)))) &&
+        (!credit.park || (this.filters.parks.filter(id => {id == credit.park.id}))) &&
+        (!credit.make || (this.filters.makes.filter(id => {id == credit.make.id})))
       
       )
     })

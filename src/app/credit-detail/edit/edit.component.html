@@ -11,58 +11,9 @@
 <ion-content>
   <ion-item lines="full">
     <ion-label color="dark" expand="full"  style="padding-left: 0px">Name: </ion-label>
-    <ion-input autocomplete="off" enterkeyhint = "done" placeholder="{{this.loadedCredit.name}}" [(ngModel)]="this.inputCredit.name"></ion-input>
-  </ion-item>
-
-  <ion-item lines="full">
-    <ion-label color="dark" expand="full" style="padding-left: 0px">Manufacturer: </ion-label>
-    <ion-input autocomplete="off" enterkeyhint = "done" [(ngModel)]="this.inputCredit.manufacturer.name" debounce = "025" style="padding-top: 15px;" placeholder="{{this.loadedCredit.manufacturer.name}}"></ion-input>
-  </ion-item>
-
-  <ion-item lines="full">
-    <ion-label color="dark"  expand="full" style="padding-left: 0px">Height: </ion-label>
-    <ion-input type="number" autocomplete="off" type="number" inputmode="numeric" enterkeyhint = "done" placeholder="{{this.displayHeight}}" [(ngModel)]="this.inputCredit.height"></ion-input>
-  </ion-item>
-  <ion-item lines="full">
-    <ion-label color="dark"  size="large" style="padding-left: 0px">Park: </ion-label>
-    <ion-input autocomplete="off" enterkeyhint = "done" placeholder="{{this.loadedCredit.park.name}}" [(ngModel)]="this.inputCredit.park.name"></ion-input>
-  </ion-item>
-  <ion-item lines="full">
-    <ion-label color="dark">Material: </ion-label>
-    <ion-select interface="popover"  [(ngModel)]="this.inputCredit.materialType.name" value="{{this.loadedCredit.materialType.name}}">
-      <ion-select-option>Steel</ion-select-option>
-      <ion-select-option>Wood</ion-select-option>
-      <ion-select-option>Hybrid</ion-select-option>
-    </ion-select>
-  </ion-item>
-  <ion-item>
-    <ion-label>Date</ion-label>
-    <ion-datetime [presentation]="'date-time'" [value]="inputCredit.time">
-      <ion-button slot="trigger">{{ loadedCredit?.time || 'Select a date' }}</ion-button>
-    </ion-datetime>
-  </ion-item>
-  <ion-item lines="full">
-    <ion-label color="dark" expand="full" style="padding-left: 0px">Max Speed: </ion-label>
-    <ion-input type="number" autocomplete="off" enterkeyhint = "done" debounce = "025" style="padding-top: 15px;" placeholder="{{this.displaySpeed}}" [(ngModel)]="this.inputCredit.speed"></ion-input>
-  </ion-item>
-  <ion-item lines="full">
-    <ion-label color="dark" expand="full" style="padding-left: 0px">Type: </ion-label>
-    <ion-input autocomplete="off" enterkeyhint = "done" debounce = "025" style="padding-top: 15px;" placeholder="{{this.loadedCredit.seatingType.name}}" [(ngModel)]="this.inputCredit.seatingType.name"></ion-input>
-  </ion-item>
-  <ion-item lines="full">
-    <ion-label color="dark" expand="full" style="padding-left: 0px">Length: </ion-label>
-    <ion-input type="number" autocomplete="off" enterkeyhint = "done" debounce = "025" style="padding-top: 15px;" placeholder="{{this.displayLength}}" [(ngModel)]="this.inputCredit.length"></ion-input>
-  </ion-item>
-  <ion-item lines="full">
-    <ion-label color="dark" expand="full" style="padding-left: 0px">Inversions: </ion-label>
-    <ion-input type="number" autocomplete="off" enterkeyhint = "done" debounce = "025" style="padding-top: 15px;" placeholder="{{this.loadedCredit.inversionsNumber}}" [(ngModel)]="this.inputCredit.inversionsNumber"></ion-input>
-  </ion-item>
-  <ion-item lines="full">
-    <ion-label color="dark" expand="full" style="padding-left: 0px">Tally: </ion-label>
-    <ion-input type="number" style="font-size: 20px; font-style: bold;" disabled = "false" placeholder="{{this.loadedCredit.tally}}" [(ngModel)]="this.inputCredit.tally"></ion-input>
+    <ion-input autocomplete="off" enterkeyhint = "done" placeholder="{{this.inputCredit.name}}" [(ngModel)]="this.inputCredit.name"></ion-input>
   </ion-item>
   
-
   <ion-button expand="block" fill="solid" strong = "true" color = "tertiary" size="default" (click)="submit()">Submit</ion-button>
 
   <ion-button expand="block" fill="solid" strong = "true" color = "danger" size="default" (click)="resetValues()">Reset Values to Default</ion-button>

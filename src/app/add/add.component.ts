@@ -12,6 +12,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { Keyboard } from '@capacitor/keyboard';
+import { CommonModule } from '@angular/common';
 
 
 @Component({
@@ -20,64 +21,27 @@ import { Keyboard } from '@capacitor/keyboard';
   styleUrls: ['./add.component.scss'],
   imports: [
     IonicModule,
-    FormsModule
+    FormsModule,
+    CommonModule
   ]
 })
 export class AddComponent implements OnInit {
 
 coasterInput: string = "";
-nameInput: string = "";
-heightInput: number = NaN;
-parkInput: string = "";
-materialInput: string = "";
-modelInput: string = "";
-timeInput: string = "";
-coasters: Coaster[] = [];
-ridden: ridden[] = [];
 searchList: Array<any> = [];
-manufacturerSearch: Array<object> = [];
-parkSearch: Array<object> = [];
-credit_list: Credit[] = [];
-modelSearch: Array<object> = [];
 searchFocus: boolean = false;
 selectedList: Array<any> = [];
 selectOption: boolean = false;
 manualCredit!: Credit;
-showDefunct: boolean = false;
 
   constructor(
   public coastersService: CoastersService, 
   public mainService: MainService,
   private alertCtrl: AlertController,
-  private ParksService: ParksService,
-  private ManufacturersService: ManufacturersService,
   private modalController: ModalController,
-  private http: HttpClient
-  
+  private http: HttpClient,
   ) {
-      this.manualCredit = {
-      height:NaN,
-      id:NaN,
-      inversionsNumber:NaN,
-      length:0,
-      mainImage:{path: ""},
-      manufacturer:{name: ""},
-      materialType:{name: ""},
-      name:"",
-      park:{name: ""},
-      rank:NaN,
-      score:undefined,
-      seatingType:{name: ""},
-      speed:NaN,
-      status:{name: ""},
-      totalRatings:NaN,
-      validDuels:NaN
-    };
-
-    this.manualCredit.height = 0;
-    this.manualCredit.length = 0;
-    this.manualCredit.speed = 0;
-    this.manualCredit.seatingType = {name: ""};
+    this.manualCredit = new Credit();
    }
 
   ngOnInit() {
@@ -102,25 +66,10 @@ showDefunct: boolean = false;
     }
   }
 
-
-   submit(credit: Credit) {
+   submitManual(credit: Credit) {
     //check if slots are blank
-    if (!Object.values(this.manualCredit).every(x => x == '' || x == undefined || Number.isNaN(x) || x.path == '' || x.name == '')) {
-      this.manualCredit.id = Math.floor(Math.random()*90000) + 10000;
-      if(this.mainService.settings.units == "imperial") {
-        if (!this.manualCredit.length) {
-          this.manualCredit.length = 0;
-        }
-        if (!this.manualCredit.height) {
-          this.manualCredit.height = 0;
-        }
-        if (!this.manualCredit.speed) {
-          this.manualCredit.speed = 0;
-        }
-        this.manualCredit.length /= 3.280839895;
-        this.manualCredit.height /= 3.280839895;
-        this.manualCredit.speed /= 0.621371;
-      } 
+    if (!Object.values(credit).every(x => x == '' || x == undefined || Number.isNaN(x) || x.path == '' || x.name == '')) {
+      credit.id = this.makeid(12);
       this.coastersService.pushCredit(credit); 
       this.closeModal();
     }
@@ -151,7 +100,12 @@ showDefunct: boolean = false;
         }
     }
     else {
-      this.coastersService.pushCredit(coaster)
+      let credit = new Credit(coaster);
+      if (credit.status && credit.status.open) {
+        credit.tally = 1;
+        credit.time = new Date().toISOString();
+      }
+      this.coastersService.pushCredit(credit)
       this.coastersService.setData();
       this.closeModal()
     }
@@ -209,19 +163,28 @@ showDefunct: boolean = false;
     var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     var charactersLength = characters.length;
     for ( var i = 0; i < length; i++ ) {
-      result += characters.charAt(Math.floor(Math.random() * 
- charactersLength));
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
    }
    return result;
 }
 
 isCoasterAvailable = false;
-searchItems(val: string) {
-  if (val && val.trim() != "") {
-    this.isCoasterAvailable = true;
-    this.coastersService.databaseParameterRequest(val, "", "", "", this.showDefunct ? "all" : "operating").then(obj => this.searchList = obj)
+
+async searchItems(input: string) {
+  console.log("test")
+  if (input && input.trim() != "") {
+    let temp: Array<any> = []
+    let requestURL = `http://localhost:8080/search/${input}?include=rides`;
+    
+    const obj = await this.http.get<Array<Coaster>>(requestURL, {headers: new HttpHeaders({'accept': 'application/json'})}).toPromise();
+    
+    Array.prototype.push.apply(temp,obj);
+    
+    this.searchList = temp;
+    console.log(this.searchList)
   }
 }
+
 
 isManufacturerAvailable = false;
 }

@@ -13,7 +13,6 @@
   },
   "private": true,
   "dependencies": {
-    "@admob-plus/capacitor": "^2.0.0-alpha.4",
     "@angular/animations": "^19.0.0",
     "@angular/common": "^19.0.0",
     "@angular/compiler": "^19.0.0",

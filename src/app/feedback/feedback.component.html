@@ -25,20 +25,20 @@
       <ion-item>
         <ion-label position="stacked">
           Email
-          <ion-text color="danger" [hidden]="email">*Required to Receive a Response</ion-text>
+          <ion-text color="danger" *ngIF="!email">*Required to Receive a Response</ion-text>
         </ion-label>
         <ion-input autocomplete="email" type="email" (keypress)="closeKeyboard($event.keyCode)" enterkeyhint = "done" [(ngModel)]="email" name="email" type="email" placeholder="Enter your email"></ion-input>
       </ion-item>
       <ion-item>
         <ion-label position="stacked">
           Feedback
-          <ion-text color="danger" [hidden]="!feedbackInput.value || feedbackInput.value.trim() !== ''">*Required</ion-text>
+          <ion-text color="danger" *ngIf="!(!feedbackInput.value || feedbackInput.value.trim() !== '')">*Required</ion-text>
         </ion-label>
         <ion-textarea #feedbackInput (keypress)="closeKeyboard($event.keyCode)" enterkeyhint = "done" rows="8" cols="40" [(ngModel)]="feedback" name="feedback" placeholder="Please describe your issue or feedback below."></ion-textarea>
       </ion-item>
     </ion-list>
     <ion-button expand="block" color="primary" (click)="submitClick()">
-      <ion-text [hidden]="this.showLoad">Submit</ion-text>
-      <ion-spinner [hidden]="!this.showLoad"></ion-spinner></ion-button>
+      <ion-text *ngIf="!this.showLoad">Submit</ion-text>
+      <ion-spinner *ngIf="this.showLoad"></ion-spinner></ion-button>
   </ion-card-content>
 </ion-card>

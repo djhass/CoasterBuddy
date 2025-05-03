@@ -29,7 +29,7 @@ export class MainService {
     private http: HttpClient,
     protected coastersService: CoastersService,
     private alertCtrl: AlertController,
-    private storage: Storage
+    private storage: Storage,
   ) {
 
       

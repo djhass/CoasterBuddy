@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Credit, Manufacturer } from './models.model'; 
-import { Coaster } from './models.model'; 
-import { SubPathObject } from './models.model'; 
+import { Credit, Coaster, Park, Make } from './models.model';
 import { AlertController } from '@ionic/angular';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
@@ -20,7 +18,7 @@ export class CoastersService {
   public displayCreditList: Credit[] = [];
   public fullSortedList: Credit[] = [];
   backupTime: String = "";
-  selectedCredit: Credit = new Credit; //used for the edit modal
+  selectedCredit: Credit = new Credit(); //used for the edit modal
 
   history: Array<HistoryLog> = [];
 
@@ -85,31 +83,31 @@ export class CoastersService {
     }
     
     //get coaster from server based on id
-  async databaseIdRequest(id: number) {
+  async databaseIdRequest(id: string) {
     return this.http.get("https://server.coasterbuddy.app/api/coasters/" + id, {headers: new HttpHeaders({'accept': 'application/json'})}).toPromise()
   }
 
   //get functions
     //get string for coaster image 
-  getCoasterLargeImage(mainImage: SubPathObject) {
-    if (mainImage && mainImage.path != null) {
-      return 'https://pictures.captaincoaster.com/1440x1440/' + mainImage.path.substring(2)
+  getCoasterLargeImage(mainImage: string) {
+    if (mainImage) {
+      return 'https://pictures.captaincoaster.com/1440x1440/' + mainImage
     }
     else {
       return ""
     }
   }
 
-  getCoasterSmallImage(mainImage: SubPathObject) {
-    if (mainImage && mainImage.path != null) {
-      return 'https://pictures.captaincoaster.com/280x210/' + mainImage.path.substring(2)
+  getCoasterSmallImage(mainImage: string) {
+    if (mainImage) {
+      return 'https://pictures.captaincoaster.com/280x210/' + mainImage
     }
     else {
       return ""
     }
   }
     //get credit with id
-  getCredit(creditid: number) {
+  getCredit(creditid: string) {
     return {
         ...this.credit_list.find(credit => {
             return credit.id === creditid;
@@ -117,7 +115,7 @@ export class CoastersService {
      }
   }
     //get boolean for if credit list includes credit of id
-  creditIsInList(id: number) {
+  creditIsInList(id: string) {
     for (var i = 0; i < this.credit_list.length; i++) {
         if (this.credit_list[i].id == id) {
             return true
@@ -127,43 +125,34 @@ export class CoastersService {
   }
     //get list of manufacturers in credit list
   manufacturersInCredits() {
-    let tempList: Array<String> = [];
+    let tempList: Array<Make> = [];
     for (let i = 0; i < this.credit_list.length; i++) {
-      const manufacturer = this.credit_list[i]?.manufacturer;
-      if (typeof this.credit_list[i].manufacturer != "undefined" && this.credit_list[i].manufacturer != null) {
-        if ((manufacturer && !(tempList.includes(manufacturer.name)))) {
-          tempList.push(manufacturer.name)
+      const manufacturer = this.credit_list[i]?.make;
+      if (typeof this.credit_list[i].make != "undefined" && this.credit_list[i].make != null) {
+        if ((manufacturer && !(tempList.find(obj =>{
+          return obj.id == manufacturer.id
+        })))) {
+          tempList.push(manufacturer)
         }
       }
     }
     return tempList;
   }
     //get list of parks in credit list
-  parksInCredits() {
-    let tempList: Array<String> = [];
-    for (let i = 0; i < this.credit_list.length; i++) {
-      const park = this.credit_list[i]?.park;
-      if (typeof this.credit_list[i].park != "undefined" && this.credit_list[i].park != null) {
-        if (park && !tempList.includes(park.name)) {
-          tempList.push(park.name)
+    parksInCredits() {
+      let tempList: Array<Park> = [];
+      for (let i = 0; i < this.credit_list.length; i++) {
+        const park = this.credit_list[i]?.park;
+        if (typeof park !== 'undefined' && park !== null) {
+          // Check if the park already exists in the tempList
+          if (!tempList.some(existingPark => (existingPark.id === park.id) && (existingPark.name === park.name))) { 
+            tempList.push(park);
+          }
         }
       }
+      return tempList;
     }
-    return tempList;
-  }
-    //get list of types in credit list
-  typesInCredits() {
-    let tempList: Array<String> = [];
-    for (let i = 0; i < this.credit_list.length; i++) {
-      const seatingType = this.credit_list[i]?.seatingType;
-      if (typeof this.credit_list[i].seatingType != "undefined" && this.credit_list[i].seatingType != null) {
-        if (seatingType && !tempList.includes(seatingType.name)) {
-          tempList.push(seatingType.name)
-        }
-      }
-    }
-    return tempList;
-  }
+
 
   //credit list manipulation functions
     //delete credit given id
@@ -176,7 +165,7 @@ export class CoastersService {
     this.credit_list = []
   }
     //add 1 to tally attribute of credit of given id 
-  tallyCredit(id: number) {
+  tallyCredit(id: string) {
     //get specific credit using "id"
     var credit = this.credit_list.find(credit => {
       return credit.id === id;
@@ -191,7 +180,7 @@ export class CoastersService {
     credit.tally++;
   }
   //set attributes of credit of id
-  set(id: number, object: { [key: string]: any }) {
+  set(id: string, object: { [key: string]: any }) {
     let credit = (this.credit_list.find(obj => obj.id == id) as any);
     for (let prop in object) {
       credit[prop] = object[prop];
@@ -200,18 +189,18 @@ export class CoastersService {
   }
     
     //add coaster to credit list
-  pushCredit(coaster: Coaster) {
-    this.credit_list.unshift(new Credit(coaster))
+  pushCredit(credit: Credit) {
+    this.credit_list.unshift(credit);
     this.setData()
   }
 
   //stats functions
     //returns number of parks in credit list
   numberOfParksInCredits() {
-    let temp: Array<String> = []
+    let temp: Array<string> = []
     for (let credit of this.credit_list) {
-      if(credit.park?.name && !temp.includes(credit.park?.name)) {
-        temp.push(credit.park?.name)
+      if(credit.park?.id && !temp.includes(credit.park?.id)) {
+        temp.push(credit.park?.id)
       }
     }
     return temp.length;
@@ -220,18 +209,8 @@ export class CoastersService {
   numberOfMansInCredits() {
     let temp: Array<String> = []
     for (let credit of this.credit_list) {
-      if(credit.manufacturer?.name && !temp.includes(credit.manufacturer?.name)) {
-        temp.push(credit.manufacturer?.name)
-      }
-    }
-    return temp.length;
-  }
-    //returns number of types in credit list
-  numberOfTypesInCredits() {
-    let temp: Array<String> = []
-    for (let credit of this.credit_list) {
-      if(credit.seatingType?.name && !temp.includes(credit.seatingType?.name)) {
-        temp.push(credit.seatingType?.name)
+      if(credit.make?.name && !temp.includes(credit.make?.name)) {
+        temp.push(credit.make?.name)
       }
     }
     return temp.length;

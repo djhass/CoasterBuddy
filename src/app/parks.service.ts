@@ -28,21 +28,22 @@ public parks: Array<Park> = [];
     return Promise.resolve()
   }
 
-  parkRequest(parkname: string) {
-    return this.http.get("https://server.coasterbuddy.app/api/parks?name=" + parkname, {headers: new HttpHeaders({'accept': 'application/json',})})
+  parkRequest(parkid: string) {
+    return this.http.get(`http://localhost:8080/park/${parkid}`, {headers: new HttpHeaders({'accept': 'application/json',})})
+  //"https://server.coasterbuddy.app/api/parks?name=" + parkname
   }
 
-  getPark(parkname: string) {
+  getPark(parkid: number) {
     return {
       ...this.parks.find(park => {
-        return park.name === parkname;
+        return parseInt(park.id) == parkid;
       })
     };
   }
 
-  parkIsVisited(parkname: string) {
+  parkIsVisited(park: Park) {
     for (let i in this.coastersService.credit_list) {
-      if (this.coastersService.credit_list[i].park && this.coastersService.credit_list[i].park.name == parkname) {
+      if (this.coastersService.credit_list[i].park && this.coastersService.credit_list[i].park.name == park.name && this.coastersService.credit_list[i].park.id == park.id) {
         return true;
       }
     }

@@ -14,6 +14,9 @@ import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { ToastController } from '@ionic/angular';
 import { IonicModule } from '@ionic/angular'; // Import IonicModule for Ionic components
 import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { ChangeDetectorRef } from '@angular/core';
 
 declare var google: any;
 
@@ -29,7 +32,9 @@ class mapOptions {
   styleUrls: ['./navigate.page.scss'],
   imports: [
     IonicModule,
-    RouterModule
+    RouterModule,
+    FormsModule,
+    CommonModule
   ]
 })
 export class NavigatePage implements OnInit {
@@ -42,7 +47,6 @@ export class NavigatePage implements OnInit {
   directionsService: any = new google.maps.DirectionsService;
   directionsDisplay: any = new google.maps.DirectionsRenderer;
   selectedPark: Park;
-  segment: any = "parks";
   geoLocationOptions: any = {
     enableHighAccuracy: true, timeout: 5000, maximumAge: 0
   };
@@ -57,6 +61,7 @@ export class NavigatePage implements OnInit {
   };
   redMarker: boolean = true;
   fabHidden: boolean;
+
   
   @ViewChild('map', {read: ElementRef, static: false}) mapRef: ElementRef;
   
@@ -71,7 +76,8 @@ export class NavigatePage implements OnInit {
     private alertCtrl: AlertController,
     public platform: Platform,
     private toastController: ToastController,
-    private locationService: LocationService
+    private locationService: LocationService,
+    private cdr: ChangeDetectorRef
     )
     {
       this.directionsDisplay.setOptions({
@@ -190,7 +196,7 @@ export class NavigatePage implements OnInit {
     }
     let wayPointsList = []
   
-    for(let i = 0; i < this.tripList[this.number].list.length - 1; i++) {
+    for(let i = 0; i < this.tripList[this.number].list.length; i++) {
       wayPointsList.push({
         location: {lat: this.tripList[this.number].list[i].latitude, lng: this.tripList[this.number].list[i].longitude},
         stopover: true
@@ -199,28 +205,27 @@ export class NavigatePage implements OnInit {
   
     this.directionsService.route({
       origin: {lat: this.locationService.latitude, lng: this.locationService.longitude},
-      destination: {lat: this.locationService.latitude, lng: this.locationService.longitude},
+      destination: {lat: wayPointsList[wayPointsList.length-1].location.lat, lng: wayPointsList[wayPointsList.length-1].location.lng},
       waypoints: wayPointsList,
       provideRouteAlternatives: false,
-      travelMode: 'DRIVING',
+      travelMode: google.maps.TravelMode.DRIVING,
       drivingOptions: {
         departureTime: new Date(/* now, or future date */),
         trafficModel: 'bestguess'
       },
-      unitSystem: this.mainService.settings.units == "metric" ? google.maps.UnitSystem.METRIC : google.maps.UnitSystem.IMPERIAL
+      unitSystem: this.mainService.settings.metric ? google.maps.UnitSystem.METRIC : google.maps.UnitSystem.IMPERIAL
     }, (result, status) => {
-      console.log(result)
       if (status === 'OK') {
-        this.distance = 0
-        this.time = 0
+        this.distance = -1
+        this.time = -1
         for(let i = 0; i < result.routes[0].legs.length; i++) {
-          this.distance += Math.round(result.routes[0].legs[i].distance.value / (this.mainService.settings.units == "imperial" ? 1608.05882353 : 1000))
+          this.distance += Math.round(result.routes[0].legs[i].distance.value / (!this.mainService.settings.metric ? 1608.05882353 : 1000))
           this.time += result.routes[0].legs[i].duration.value
         }
         this.directionsDisplay.setDirections(result);
       } else {
         this.time = 0;
-        this.distance = 0
+        this.distance = 0;
         this.presentToast("There was an error finding a path \n Error: " + result.status);
       }
     });
@@ -239,20 +244,23 @@ export class NavigatePage implements OnInit {
   
     var color;
   
-    this.setMarkers();
-    for (let marker of this.markers) {
+    //this.setMarkers();
+    for (let park of this.parksService.parks) {
       color = "red";
       if (this.tripList.length > 0) {
-        if (this.tripList[this.number].list.find((park) => park.name == marker.name)) {
+        if (this.tripList[this.number].list.find((obj) => {
+          return obj.id == park.id
+        })) {
           color = "ltblue";
         } 
       }
-      let position = new google.maps.LatLng(marker.latitude, marker.longitude);
+      let position = new google.maps.LatLng(park.latitude, park.longitude);
       let mapMarker = new google.maps.Marker({
         position: position,
-        title: marker.name,
-        latitude: marker.latitude,
-        longitude: marker.longitude,
+        title: park.name,
+        id: park.id,
+        latitude: park.latitude,
+        longitude: park.longitude,
         icon: "assets/Maps/" + color + "-dot.png",
         visible: color == "red" ? this.mapOptions.redMarker : this.mapOptions.blueMarker
       });
@@ -263,8 +271,9 @@ export class NavigatePage implements OnInit {
     }
   }
   
-    selectPark(park) {
-      this.selectedPark = this.parksService.getPark(park);
+    selectPark(parkId) {
+      this.selectedPark = {...this.parksService.getPark(parkId)};
+      this.cdr.detectChanges();
     }
     
     addInfoWindowToMarker(marker) {
@@ -277,7 +286,7 @@ export class NavigatePage implements OnInit {
           this.mapMarkers[this.mapMarkers.length - 1].setMap(null);
         }
         this.closeAllInfoWindows();
-        this.selectPark(marker.title)
+        this.selectPark(marker.id);
         infoWindow.open(this.map, marker);
       });
       this.infoWindows.push(infoWindow);
@@ -310,7 +319,7 @@ export class NavigatePage implements OnInit {
         content: infoWindowContent
       });
       this.closeAllInfoWindows();
-      this.selectPark(mapMarker.title)
+      this.selectPark(mapMarker.id)
       infoWindow.open(this.map, mapMarker);
       this.infoWindows.push(infoWindow);
   
@@ -325,8 +334,7 @@ export class NavigatePage implements OnInit {
   
     setMarkers() {
       this.markers = []
-      var i;
-      for (i = 0; i < this.parksService.parks.length; i++) {
+      for (var i = 0; i < this.parksService.parks.length; i++) {
         this.markers.push(this.parksService.parks[i])
       }
     }
@@ -343,7 +351,7 @@ export class NavigatePage implements OnInit {
       }
     }
   
-    pushTripAlert(park) {
+    pushTripAlert() {
       if (this.tripList.length == 0) {
         this.alertCtrl.create({
           header: "You must have a trip to add this to",
@@ -354,7 +362,7 @@ export class NavigatePage implements OnInit {
       }
       else {
         this.alertCtrl.create({
-          header: 'Add ' + park.name + ' to ' + this.tripList[this.number].name + '?',
+          header: 'Add ' + this.selectedPark.name + ' to ' + this.tripList[this.number].name + '?',
           buttons: [
             {
               text: 'Cancel',
@@ -363,8 +371,8 @@ export class NavigatePage implements OnInit {
             {
               text: 'Yes',
               handler: data => {
-                this.pushTripList(park);
-                this.replaceMarker(park.name);
+                this.pushTripList(this.selectedPark);
+                this.replaceMarker(this.selectedPark);
                 this.calculateAndDisplayRoute()
               }
             }
@@ -390,7 +398,7 @@ export class NavigatePage implements OnInit {
       this.setTrips()
     }
   
-    listName() { 
+    listName() {
       this.alertCtrl.create({
         header: 'Name of List',
         inputs: [
@@ -433,11 +441,13 @@ export class NavigatePage implements OnInit {
           {
             text: 'Delete',
             handler: () => {
-              this.tripList.splice(this.number, 1);
-              this.setTrips()
-              this.number = 0;
-              this.addMarkersToMap()
-              this.calculateAndDisplayRoute()
+              if (this.tripList.length > 0) {
+                this.tripList.splice(this.number, 1);
+                this.setTrips()
+                this.number = 0;
+                this.addMarkersToMap()
+                this.calculateAndDisplayRoute()
+              }
             }
           }
         ]
@@ -458,9 +468,8 @@ export class NavigatePage implements OnInit {
           {
             text: 'Delete',
             handler: () => {
-              var name = this.tripList[this.number].list[park].name
               this.tripList[this.number].list.splice(park, 1);
-              this.replaceMarker(name)
+              this.replaceMarker(this.tripList[this.number].list[park])
               this.setTrips()
               this.calculateAndDisplayRoute()
             }
@@ -479,12 +488,12 @@ export class NavigatePage implements OnInit {
       }
     }
   
-    replaceMarker(Name) {
+    replaceMarker(park) {
       var color = "red";
-      if (this.tripList[this.number].list.find((Park) => Name == Park.name)) {
+      if (this.tripList[this.number].list.find((Park) => Park.id == park.id)) {
         color = "ltblue";
       }
-      var index = this.mapMarkers.findIndex(x => x.title == Name);
+      var index = this.mapMarkers.findIndex(x => x.title == park.name);
       var mapMarker = this.mapMarkers[index];
       mapMarker.icon = "assets/Maps/" + color + "-dot.png"
       mapMarker.visible = color == "red" ? this.mapOptions.redMarker : this.mapOptions.blueMarker

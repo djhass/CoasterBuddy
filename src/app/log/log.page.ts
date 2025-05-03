@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, ViewChild, ViewChildren, ElementRef, QueryList } from '@angular/core';
-import { Credit, Park, Manufacturer } from '../models.model';
+import { Credit, Park, Make } from '../models.model';
 import { CoastersService } from '../coasters.service';
 import { ParksService } from '../parks.service';
 import { MainService } from '../main.service';
@@ -14,6 +14,7 @@ import { FilterComponent } from './filter/filter.component'
 import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 import * as _ from 'lodash';
 
@@ -25,24 +26,25 @@ import * as _ from 'lodash';
   imports: [
     IonicModule,
     RouterModule,
-    CommonModule
+    CommonModule,
+    FormsModule
   ]
 })
 
 export class LogPage implements OnInit {
 
-  @ViewChild(IonContent, {
-    static: false
-  })
+  // Decorator for IonContent (single element reference)
+  @ViewChild(IonContent, { static: false }) 
+  content!: IonContent;
 
-  itemElements: QueryList<ElementRef>;
+  // Decorator for item elements (multiple element references)
+  @ViewChildren('itemElement', { read: ElementRef }) 
+  itemElements!: QueryList<ElementRef>;
 
-  @ViewChildren('checkboxElement', {
-    read: ElementRef, 
-  })
-  checkboxElements: QueryList<ElementRef>;
+  // Decorator for checkbox elements (multiple element references)
+  @ViewChildren('checkboxElement', { read: ElementRef }) 
+  checkboxElements!: QueryList<ElementRef>;
 
-  content: IonContent;
   sorted: Array<Credit>;
   list_select: string = "Coasters";
   sort_select: string = "rank";
@@ -55,7 +57,7 @@ export class LogPage implements OnInit {
   edit: boolean = false;
   haveBeenArranged: boolean = false;
   displayParkList: Array<Park>;
-  displayManList: Array<Manufacturer>;
+  displayManList: Array<Make>;
   displayFab: boolean = true;
 
   constructor(
@@ -74,12 +76,18 @@ export class LogPage implements OnInit {
     
   };
 
-  test() {
-    console.log("Tests")
-  }
-
   ionViewWillLeave() {
 
+  }
+
+  ISOToReadable(input: string) {
+    return new Date(input).toLocaleTimeString('en-US', { 
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    });
   }
 
   showFab() {
@@ -106,6 +114,7 @@ export class LogPage implements OnInit {
     let duration = 80;
     //Hide
     if (this.showSearchbar) {
+      this.unHighlightElements();
       document.getElementById('searchToolbar').animate(
         [
           {
@@ -128,20 +137,21 @@ export class LogPage implements OnInit {
     //Show
     else {
       this.showSearchbar = true;
-      document.getElementById('searchToolbar').animate(
-        [
+      const searchToolbar = document.getElementById('searchToolbar');
+      if (searchToolbar) {
+        searchToolbar.animate(
+          [
+            { height: '0px' },
+            { height: '48px' }
+          ],
           {
-            height: '0px'
-          },
-          {
-            height: '48px'
+            duration: duration,
+            easing: 'linear'
           }
-        ],
-        {
-          duration: duration,
-          easing: 'linear'
-        }
-      )
+        );
+      } else {
+        console.error("searchToolbar element not found");
+      }
     }
   }
 
@@ -150,6 +160,7 @@ onSearch(ev: any) {
   if (val && val.trim() != "") { 
     let found = false;
     this.coastersService.credit_list.forEach((item, i) => {
+      
       if (item.name.toLowerCase().replace(/\s/g, '').includes(val) && !found) {
         found = true;
         let itemElement = this.itemElements.toArray()[i].nativeElement;
@@ -257,17 +268,17 @@ unHighlightElements() {
  creditsInPark(park) {
   var count = 0
     for (let i = 0; i < this.coastersService.credit_list.length; i++) {
-      if (this.coastersService.credit_list[i]?.park?.name == park) {
+      if (this.coastersService.credit_list[i]?.park?.id ? this.coastersService.credit_list[i]?.park?.id == park.id : this.coastersService.credit_list[i]?.park?.name == park.name) {
         count++;
       }
     }
     return count;
  }
 
-creditsInMan(man) {
+creditsInMake(make) {
   var count = 0
   for (let i = 0; i < this.coastersService.credit_list.length; i++) {
-    if (this.coastersService.credit_list[i]?.manufacturer?.name == man) {
+    if (this.coastersService.credit_list[i]?.make?.id ? this.coastersService.credit_list[i]?.make?.id == make.id : this.coastersService.credit_list[i]?.make?.name == make.name) {
       count++;
     }
   }
@@ -354,12 +365,32 @@ reorderItems(event) {
 }
 
 sortBy() {
+  const useMetric = this.mainService.settings.metric;
   const criteria = this.sort_select;
 
-  const compareFunction = (a, b) => {
-    const valueA = a[criteria];
-    const valueB = b[criteria];
 
+  const compareFunction = (a, b) => {
+    const getValue = (item) => {
+      let value = item[criteria];
+
+      // Check if the value is a sub-object with metric/imperial
+      if (value && typeof value === 'object') {
+
+        if (value.metric && (!value.imperial || useMetric)) {
+          return value.metric;
+        }
+        else if (value.imperial && (!value.metric || !useMetric)) {
+          return value.imperial;
+        }
+        else {
+          return 0;
+        }
+      }
+    };
+  
+    const valueA = getValue(a);
+    const valueB = getValue(b);
+  
     // Handle null or undefined values
     if (valueA === null || valueA === undefined) {
       return 1; // Move valueA to the end
@@ -367,25 +398,26 @@ sortBy() {
     if (valueB === null || valueB === undefined) {
       return -1; // Move valueB to the end
     }
-
-    // Handle NaN values (if applicable)
+  
+    // Handle NaN values
     if (Number.isNaN(valueA)) {
       return 1; // Move valueA to the end
     }
     if (Number.isNaN(valueB)) {
       return -1; // Move valueB to the end
     }
-
-    // Regular comparison based on criteria
-    return criteria === 'time'
-      ? Date.parse(valueB) - Date.parse(valueA)
-      : valueB - valueA;
+  
+    // Handle date comparison
+    if (criteria === 'time') {
+      return Date.parse(valueB) - Date.parse(valueA); // Compare dates
+    }
+  
+    // Regular numeric comparison
+    return valueB - valueA;
   };
 
-  // Sort the
-
+  // Sort
   if (criteria == "rank" && !this.mainService.filters?.appliedFilters) {
-    console.log(this.coastersService.credit_list)
     this.coastersService.displayCreditList = [...this.coastersService.credit_list]
   }
   else if (criteria == "rank" && this.mainService.filters?.appliedFilters) {

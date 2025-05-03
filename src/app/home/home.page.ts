@@ -105,9 +105,6 @@ export class HomePage implements OnInit {
       }
       this.frontPark = obj
     })
-    if (this.frontPark.id < 0) {
-      return;
-    }
     let temp: Array<Coaster> = [];
     let request = await this.http.get<Array<Coaster>>("https://server.coasterbuddy.app/api/coasters?status=operating&park=" + encodeURI(this.frontPark.name.toLowerCase()), {headers: new HttpHeaders({'accept': 'application/json'})})
     await request.subscribe((coasters: Array<Coaster>) => {

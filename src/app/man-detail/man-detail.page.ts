@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { CoastersService } from '../coasters.service';
-import { Coaster } from '../models.model';
-import { Credit } from '../models.model';
+import { Make } from '../models.model';
 import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-man-detail',
@@ -12,53 +12,57 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./man-detail.page.scss'],
   imports: [
     IonicModule,
-    RouterModule
+    RouterModule,
+    CommonModule
   ]
 })
 export class ManDetailPage implements OnInit {
-  coasters: Coaster[] = [];
-  name: string;
-  loading: boolean = false;
-  coastersLoaded: boolean = false;
-  displayCoasters: Coaster[] = [];
-  displayCredits: Credit[] = [];
+
+    loadedMake: Make = new Make();
+    page: string
 
   constructor(
     private activatedRoute: ActivatedRoute, 
-    public coastersService: CoastersService,
-  ) {}
+    private http: HttpClient
+  ) {
+        this.page = location.pathname.split('/')[1]
+        console.log(this.page)
+    
+        this.activatedRoute.paramMap.subscribe(paramMap => {
+          if (!paramMap.has('makeid')) {
+            // redirect
+            console.log("boob")
+            return;
+          }
+          const makeid = paramMap.get('makeid');
+          console.log(makeid)
+          
+          this.getMakeData(makeid).subscribe(obj => {
+            this.loadedMake = new Make(obj);
+            console.log(this.loadedMake)
+          })
+      })
+  }
 
   ngOnInit() {
-    this.activatedRoute.paramMap.subscribe(paramMap => {
-      this.name = paramMap.get('manName');
-      this.getAllCredits()
-    });
+
   }
 
-  getAllCredits() {
-    this.displayCredits = this.coastersService.credit_list.filter((credit: Credit) => {
-      return credit.manufacturer.name === this.name;
-    });
-  }
-
-  async getAllCoasters() {
-    if (!this.coastersLoaded) {
-      this.coastersLoaded = true;
-      this.loading = true;
-        if (this.name) {
-          this.coastersService.databaseParameterRequest("", "", "", encodeURI(this.name.toLowerCase()), "all").then(obj => {
-            this.coasters = obj;
-            this.displayCoasters = obj;
-            this.loading = false;
-          })
-        }
+  getMakeData(makeid) {
+    let url = `http://localhost:8080/make/${makeid}` //`https://server.coasterbuddy.app/api/make/${makeid}`
+    let httpHeaders = new HttpHeaders({
+      'accept': 'application/json',
+    })
+  
+    let options = {
+        headers: httpHeaders
     }
-    else {
-      this.displayCoasters = this.coasters;
-    }
+  
+    return this.http.get(url, options)
   }
 
-  hideCoasters() {
-    this.displayCoasters = [];
+  website() {
+    console.log(this.loadedMake.website)
+    window.open(this.loadedMake.website, '_system', 'location=yes'); return false;
   }
 }
