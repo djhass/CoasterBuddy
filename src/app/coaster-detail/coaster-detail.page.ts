@@ -118,7 +118,7 @@ export class CoasterDetailPage implements OnInit {
     //http://104.2.36.28:8085/queue-times.com/en-US/parks.json
     //http://104.2.36.28:8085/coasters-api.herokuapp.com
     //https://cors-anywhere.herokuapp.com/
-    let url = `http://localhost:8080/ride/${coasterid}` //`https://server.coasterbuddy.app/api/coasters/${coasterid}`
+    let url = `${this.mainService.SERVERURL}/ride/${coasterid}` //`https://server.coasterbuddy.app/api/coasters/${coasterid}`
     let httpHeaders = new HttpHeaders({
       'accept': 'application/json',
     })

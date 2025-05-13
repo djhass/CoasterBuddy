@@ -69,7 +69,7 @@ export class LocationService {
     await this.getGeolocation()
     for (let i = 0; i < 2100; i++) {
       let distance = this.getDistanceFromPark(this.ParksService.parks[i])
-      if (distance < 100) {
+      if (distance < 200) {
         if (temp == undefined || distance > this.getDistanceFromPark(temp)) {
           temp = this.ParksService.parks[i];
         }

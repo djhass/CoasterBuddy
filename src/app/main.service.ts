@@ -27,6 +27,8 @@ export class MainService {
   private alertCtrl: AlertController;
   public filters: Filter;
   public initialFilterObj: Filter;
+  public creditFilterUnitChangeDetect: Boolean = false;
+  public SERVERURL: string = "http://localhost:8080";
 
   constructor(
     private toastController: ToastController,

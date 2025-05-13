@@ -140,6 +140,9 @@ export class CreditDetailPage implements OnInit {
     }
 
   tally() {
+    if (!this.loadedCredit.tally) {
+      this.loadedCredit.tally = 0;
+    }
     this.loadedCredit.tally = this.loadedCredit.tally + 1;
     this.coastersService.set(this.loadedCredit.id, {tally: this.loadedCredit.tally})
   }

@@ -19,46 +19,44 @@
         <ion-avatar style="height: 15vw; width:15vw;">
           <ion-img [src]="this.shownImg || this.altImg" (ionError)="onImgFail()"></ion-img>
         </ion-avatar>
-
-        <div class="small-toolbar-item-container" *ngIf="this.loadedCredit.status">
-          <div class="small-toolbar-item" *ngIf="this.loadedCredit.status.calculated_wait && this.loadedCredit.status.open">
-            <ion-icon name="hourglass-outline"></ion-icon>
-            <ion-label style="font-weight:bold">{{this.loadedCredit.status.calculated_wait}}</ion-label>
+          <div class="small-toolbar-item-container" *ngIf="this.loadedCredit.status">
+            <div class="small-toolbar-item" *ngIf="this.loadedCredit.status.calculated_wait && this.loadedCredit.status.open">
+              <ion-icon name="hourglass-outline"></ion-icon>
+              <ion-label style="font-weight:bold">{{this.loadedCredit.status.calculated_wait}}</ion-label>
+            </div>
+            <div class="small-toolbar-item" *ngIf="!this.loadedCredit.status.open && !this.loadedCredit.status.testing && this.loadedCredit.status.standing && this.loadedCredit.status.operable">
+              <ion-label>Currently Closed</ion-label>
+            </div>
+            <div class="small-toolbar-item" *ngIf="this.loadedCredit.status.open && !this.loadedCredit.status.trains_on_track && !this.loadedCredit.status.operation_speed && !this.loadedCredit.status.posted_wait">
+              <ion-label>Operational</ion-label>
+            </div>
+            <div class="small-toolbar-item" *ngIf="this.loadedCredit.status.testing">
+              <ion-label>Testing</ion-label>
+            </div>
+            <div class="small-toolbar-item" *ngIf="!this.loadedCredit.status.operable && this.loadedCredit.status.standing">
+              <ion-label>Closed Indefinitely</ion-label>
+            </div>
+            <div class="small-toolbar-item" *ngIf="!this.loadedCredit.status.standing">
+              <ion-label>Removed</ion-label>
+            </div>
+            <div class="small-toolbar-item" *ngIf="(this.loadedCredit.status.open || this.loadedCredit.status.testing) && this.loadedCredit.status.trains_on_track && (!this.loadedCredit.status.posted_wait || !this.loadedCredit.status.calculated_wait || this.loadedCredit.status.testing)">
+              <ion-icon name="train"></ion-icon>
+              <ion-label *ngIf="this.loadedCredit.trains">{{ this.loadedCredit.status.trains_on_track }}/{{this.loadedCredit.trains}}</ion-label>
+              <ion-label *ngIf="!this.loadedCredit.trains">{{ this.loadedCredit.status.trains_on_track }}</ion-label>
+            </div>
+            <div class="small-toolbar-item" *ngIf="this.loadedCredit.status.open && this.loadedCredit.status.posted_wait">
+              <ion-icon name="time"></ion-icon>
+              <ion-label>{{ this.loadedCredit.status.posted_wait }}</ion-label>
+            </div>
+            <div class="small-toolbar-item" *ngIf="this.loadedCredit.status.open && this.loadedCredit.status.operation_speed && !this.loadedCredit.capacity">
+              <ion-icon name="people"></ion-icon>
+              <ion-label>{{this.loadedCredit.status.operation_speed}}</ion-label>
+            </div>
+            <div class="small-toolbar-item" *ngIf="this.loadedCredit.status.open && this.loadedCredit.status.operation_speed && this.loadedCredit.capacity">
+              <ion-icon name="people"></ion-icon>
+              <ion-label>{{Math.round(this.loadedCredit.status.operation_speed / this.loadedCredit.capacity * 100)}}%</ion-label>
+            </div>
           </div>
-          <div class="small-toolbar-item" *ngIf="!this.loadedCredit.status.open && !this.loadedCredit.status.testing && this.loadedCredit.status.standing && this.loadedCredit.status.operable">
-            <ion-label>Currently Closed</ion-label>
-          </div>
-          <div class="small-toolbar-item" *ngIf="this.loadedCredit.status.open && !this.loadedCredit.status.trains_on_track && !this.loadedCredit.status.operation_speed && !this.loadedCredit.status.posted_wait">
-            <ion-label>Operational</ion-label>
-          </div>
-          <div class="small-toolbar-item" *ngIf="this.loadedCredit.status.testing">
-            <ion-label>Testing</ion-label>
-          </div>
-          <div class="small-toolbar-item" *ngIf="!this.loadedCredit.status.operable && this.loadedCredit.status.standing">
-            <ion-label>Closed Indefinitely</ion-label>
-          </div>
-          <div class="small-toolbar-item" *ngIf="!this.loadedCredit.status.standing">
-            <ion-label>Removed</ion-label>
-          </div>
-          <div class="small-toolbar-item" *ngIf="(this.loadedCredit.status.open || this.loadedCredit.status.testing) && this.loadedCredit.status.trains_on_track && (!this.loadedCredit.status.posted_wait || !this.loadedCredit.status.calculated_wait || this.loadedCredit.status.testing)">
-            <ion-icon name="train"></ion-icon>
-            <ion-label *ngIf="this.loadedCredit.trains">{{ this.loadedCredit.status.trains_on_track }}/{{this.loadedCredit.trains}}</ion-label>
-            <ion-label *ngIf="!this.loadedCredit.trains">{{ this.loadedCredit.status.trains_on_track }}</ion-label>
-          </div>
-          <div class="small-toolbar-item" *ngIf="this.loadedCredit.status.open && this.loadedCredit.status.posted_wait">
-            <ion-icon name="time"></ion-icon>
-            <ion-label>{{ this.loadedCredit.status.posted_wait }}</ion-label>
-          </div>
-          <div class="small-toolbar-item" *ngIf="this.loadedCredit.status.open && this.loadedCredit.status.operation_speed && !this.loadedCredit.capacity">
-            <ion-icon name="people"></ion-icon>
-            <ion-label>{{this.loadedCredit.status.operation_speed}}</ion-label>
-          </div>
-          <div class="small-toolbar-item" *ngIf="this.loadedCredit.status.open && this.loadedCredit.status.operation_speed && this.loadedCredit.capacity">
-            <ion-icon name="people"></ion-icon>
-            <ion-label>{{Math.round(this.loadedCredit.status.operation_speed / this.loadedCredit.capacity * 100)}}%</ion-label>
-          </div>
-        </div>
-        
       </ion-item>
     </ion-title>
   </ion-toolbar>
@@ -82,43 +80,43 @@
     <ion-toolbar>
       <ion-title size="small">
         <div class="large-toolbar-item-container" *ngIf="this.loadedCredit.status">
-          <ion-chip class="large-toolbar-item" *ngIf="this.loadedCredit.status.calculated_wait && this.loadedCredit.status.open">
-            <ion-icon name="hourglass-outline" color="black"></ion-icon>
-            <ion-label style="font-weight:bold">{{this.loadedCredit.status.calculated_wait}} min</ion-label>
-          </ion-chip>
-          <ion-chip class="large-toolbar-item" style="background-color:var(--ion-color-danger); color:white" *ngIf="!this.loadedCredit.status.open && !this.loadedCredit.status.testing && this.loadedCredit.status.standing && this.loadedCredit.status.operable">
-            Currently Closed
-          </ion-chip>
-          <ion-chip class="large-toolbar-item" style="background-color:var(--ion-color-success)" *ngIf="this.loadedCredit.status.open && !this.loadedCredit.status.trains_on_track && !this.loadedCredit.status.operation_speed && !this.loadedCredit.status.posted_wait && !this.loadedCredit.status.calculated_wait">
-            Operational
-          </ion-chip>
-          <ion-chip class="large-toolbar-item" style="background-color:var(--ion-color-warning);" *ngIf="this.loadedCredit.status.testing">
-            Testing
-          </ion-chip>
-          <ion-chip class="large-toolbar-item" style="background-color:var(--ion-color-danger); color:white" *ngIf="!this.loadedCredit.status.operable && this.loadedCredit.status.standing">
-            Closed Indefinitely
-          </ion-chip>
-          <ion-chip class="large-toolbar-item" style="background-color:var(--ion-color-danger); color:white" *ngIf="!this.loadedCredit.status.standing">
-            Removed
-          </ion-chip>
-          <ion-chip class="large-toolbar-item" *ngIf="this.loadedCredit.status.posted_wait && this.loadedCredit.status.open">
-            <ion-icon name="time-outline" color="black"></ion-icon>
-            <ion-label>{{this.loadedCredit.status.posted_wait}} min posted</ion-label>
-          </ion-chip>
-          <ion-chip class="large-toolbar-item" *ngIf="this.loadedCredit.status.open && this.loadedCredit.status.operation_speed && !this.loadedCredit.capacity">
-            <ion-icon name="people-outline" color="black"></ion-icon>
-            <ion-label>{{this.loadedCredit.status.operation_speed}} riders/hr</ion-label>
-          </ion-chip>
-          <ion-chip class="large-toolbar-item" *ngIf="this.loadedCredit.status.open && this.loadedCredit.status.operation_speed && this.loadedCredit.capacity">
-            <ion-icon name="people-outline" color="black"></ion-icon>
-            <ion-label>{{Math.round(this.loadedCredit.status.operation_speed / this.loadedCredit.capacity * 100)}}% operation</ion-label>
-          </ion-chip>
-          <ion-chip class="large-toolbar-item" *ngIf="(this.loadedCredit.status.open || this.loadedCredit.status.testing) && this.loadedCredit.status.trains_on_track"> 
-            <ion-icon name="train-outline" color="black"></ion-icon>
-            <ion-label *ngIf="this.loadedCredit.trains">{{ this.loadedCredit.status.trains_on_track }}/{{this.loadedCredit.trains}} trains</ion-label>
-            <ion-label *ngIf="!this.loadedCredit.trains">{{ this.loadedCredit.status.trains_on_track }} train{{this.loadedCredit.status.trains_on_track > 1 ? 's' : ''}}</ion-label>
-          </ion-chip>
-        </div>
+            <ion-chip class="large-toolbar-item" class="large-toolbar-item" *ngIf="this.loadedCredit.status.calculated_wait && this.loadedCredit.status.open" style="background-color: {{ mainService.interpolateIonicColors('success', 'warning', Math.min(1-(this.loadedCredit.status.calculated_wait/100))) }}">
+              <ion-icon name="hourglass-outline" color="black"></ion-icon>
+              <ion-label style="font-weight:bold">{{this.loadedCredit.status.calculated_wait}} min</ion-label>
+            </ion-chip>
+            <ion-chip class="large-toolbar-item" style="background-color:var(--ion-color-danger); color:white" *ngIf="!this.loadedCredit.status.open && !this.loadedCredit.status.testing && this.loadedCredit.status.standing && this.loadedCredit.status.operable">
+              Currently Closed
+            </ion-chip>
+            <ion-chip class="large-toolbar-item" style="background-color:var(--ion-color-success)" *ngIf="this.loadedCredit.status.open && !this.loadedCredit.status.trains_on_track && !this.loadedCredit.status.operation_speed && !this.loadedCredit.status.posted_wait && !this.loadedCredit.status.calculated_wait">
+              Operational
+            </ion-chip>
+            <ion-chip class="large-toolbar-item" style="background-color:var(--ion-color-warning);" *ngIf="this.loadedCredit.status.testing">
+              Testing
+            </ion-chip>
+            <ion-chip class="large-toolbar-item" style="background-color:var(--ion-color-danger); color:white" *ngIf="!this.loadedCredit.status.operable && this.loadedCredit.status.standing">
+              Closed Indefinitely
+            </ion-chip>
+            <ion-chip class="large-toolbar-item" style="background-color:var(--ion-color-danger); color:white" *ngIf="!this.loadedCredit.status.standing">
+              Removed
+            </ion-chip>
+            <ion-chip style="background-color: {{ mainService.interpolateIonicColors('success', 'warning', Math.min(1-(this.loadedCredit.status.posted_wait/100))) }}" class="large-toolbar-item" *ngIf="this.loadedCredit.status.posted_wait && this.loadedCredit.status.open">
+              <ion-icon name="time-outline" color="black"></ion-icon>
+              <ion-label>{{this.loadedCredit.status.posted_wait}} min posted</ion-label>
+            </ion-chip>
+            <ion-chip class="large-toolbar-item" *ngIf="this.loadedCredit.status.open && this.loadedCredit.status.operation_speed && !this.loadedCredit.capacity">
+              <ion-icon name="people-outline" color="black"></ion-icon>
+              <ion-label>{{this.loadedCredit.status.operation_speed}} riders/hr</ion-label>
+            </ion-chip>
+            <ion-chip class="large-toolbar-item" *ngIf="this.loadedCredit.status.open && this.loadedCredit.status.operation_speed && this.loadedCredit.capacity">
+              <ion-icon name="people-outline" color="black"></ion-icon>
+              <ion-label>{{Math.round(this.loadedCredit.status.operation_speed / this.loadedCredit.capacity * 100)}}% operation</ion-label>
+            </ion-chip>
+            <ion-chip class="large-toolbar-item" *ngIf="(this.loadedCredit.status.open || this.loadedCredit.status.testing) && this.loadedCredit.status.trains_on_track"> 
+              <ion-icon name="train-outline" color="black"></ion-icon>
+              <ion-label *ngIf="this.loadedCredit.trains">{{ this.loadedCredit.status.trains_on_track }}/{{this.loadedCredit.trains}} trains</ion-label>
+              <ion-label *ngIf="!this.loadedCredit.trains">{{ this.loadedCredit.status.trains_on_track }} train{{this.loadedCredit.status.trains_on_track > 1 ? 's' : ''}}</ion-label>
+            </ion-chip>
+          </div>
         <ion-img [src]="this.shownImg || this.altImg" (ionError)="onImgFail()"></ion-img>
       </ion-title>
     </ion-toolbar>

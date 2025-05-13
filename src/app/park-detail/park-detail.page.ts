@@ -49,7 +49,7 @@ export class ParkDetailPage implements OnInit {
 }
 
 getParkData(parkid) {
-  let url = `http://localhost:8080/park/${parkid}` //`https://server.coasterbuddy.app/api/park/${parkid}`
+  let url = `${this.mainService.SERVERURL}/park/${parkid}` //`https://server.coasterbuddy.app/api/park/${parkid}`
   let httpHeaders = new HttpHeaders({
     'accept': 'application/json',
   })

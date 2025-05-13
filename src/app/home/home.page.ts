@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, NgModule } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Coaster, Park } from '../models.model';
 import { CoastersService } from '../coasters.service';
 import { MainService } from '../main.service';
@@ -15,6 +15,7 @@ import { Browser } from '@capacitor/browser';
 import { IonicModule } from '@ionic/angular'; // Import IonicModule for Ionic components
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectorRef } from '@angular/core';
 
 
 //declare var RSSParser;
@@ -27,16 +28,6 @@ interface time_coaster {
   last_updated: string
 }
 
-interface land {
-  id: number,
-  name: string,
-  rides: Array<time_coaster>
-}
-
-interface park_time_request {
-  lands: Array<land>;
-  rides: Array<time_coaster>;
-}
 
 @Component({
   selector: 'app-home',
@@ -45,10 +36,11 @@ interface park_time_request {
   standalone: true,
   imports: [
     IonicModule,
-    RouterModule ,
-    CommonModule
+    RouterModule,
+    CommonModule,
   ]
 })
+
 
 export class HomePage implements OnInit {
       
@@ -71,6 +63,7 @@ export class HomePage implements OnInit {
   private menu: MenuController,
   private http: HttpClient,
   private alertCtrl: AlertController,
+  private cdr: ChangeDetectorRef
   ) {
   }
 
@@ -82,7 +75,6 @@ export class HomePage implements OnInit {
     else {
       this.newsRequest()
       this.setFrontCoasters()
-      //this.setFrontTimesCoasters()
     }
   }
 
@@ -90,23 +82,26 @@ export class HomePage implements OnInit {
   openLink(url: string) {
     Browser.open({ url: url });
   }
+  
 
   async newsRequest() {
-    let request = await this.http.get("https://server.coasterbuddy.app/api/news", {headers: new HttpHeaders({'accept': 'application/json'})})
+    let request = await this.http.get(`${this.mainService.SERVERURL}/api/news`, {headers: new HttpHeaders({'accept': 'application/json'})})
     await request.subscribe(obj => {
       this.news = obj
     })
   }
 
   async setFrontCoasters() {
-    await this.locationService.getClosePark().then(obj => {
+    /*
+
+    this.locationService.getClosePark().then(obj => {
       if (!obj) {
         obj = new Park();
       }
       this.frontPark = obj
     })
     let temp: Array<Coaster> = [];
-    let request = await this.http.get<Array<Coaster>>("https://server.coasterbuddy.app/api/coasters?status=operating&park=" + encodeURI(this.frontPark.name.toLowerCase()), {headers: new HttpHeaders({'accept': 'application/json'})})
+    let request = await this.http.get<Array<Coaster>>(`${this.mainService.SERVERURL}/api/coasters?status=operating&park=${encodeURI(this.frontPark.name.toLowerCase())}`, {headers: new HttpHeaders({'accept': 'application/json'})})
     await request.subscribe((coasters: Array<Coaster>) => {
       for(var i in coasters) {
         temp.unshift(coasters[i]);
@@ -114,44 +109,31 @@ export class HomePage implements OnInit {
     })
     this.frontCoasters = temp
     Promise.resolve()
-  }
 
-  async setFrontTimesCoasters() {
-    await this.http.get("https://server.coasterbuddy.app/times/parks", {headers: new HttpHeaders({'accept': 'application/json'})}).subscribe(obj1 => {
-      console.log(obj1)
-      this.locationService.getCloseTimesParks(obj1).then(obj2 => {
-        console.log(obj2)
-        let coasterData = "https://server.coasterbuddy.app/times/parks/" + obj2[0].id
-        this.http.get<park_time_request>(coasterData).subscribe((obj3: park_time_request) => {
-          const namesToSearch = ['coaster', 'thrill', 'rides'];
-          let foundName = false;
-          for (let name of namesToSearch) {
-            for (let i = 0; i < obj3['lands'].length; i++) {
-              if (obj3['lands'][i].name.toLowerCase().includes(name)) {
-                   this.frontTimesCoasters = obj3['lands'][i].rides;
-                  foundName = true
-                  break;
-              }
-            }
-            if (foundName) {
-              break;
-            }
-          }
-          if (!foundName) {
-            if (obj3['lands'].length > 0) {
-              let temp: Array<time_coaster> = []
-              for (let i = 0; i < obj3['lands'].length; i++) {
-                temp = temp.concat(obj3['lands'][i].rides)
-              }
-              this.frontTimesCoasters = temp
-            }
-            else {
-              this.frontTimesCoasters = obj3['rides']
-            }
-          }
-        })
-      })
-    });
+    */
+    this.locationService.getClosePark().then(park => {
+
+      if (!park) {
+        return
+      }
+
+      this.frontPark = park
+      let temp: Array<Coaster> = [];
+      let request = this.http.get<Array<Coaster>>(`${this.mainService.SERVERURL}/search/%20?include=rides&status=operating&wait_time=true&park=${encodeURI(this.JSON.stringify({name: park.name, id: park.id.toString()}))}`, {headers: new HttpHeaders({'accept': 'application/json'})})
+
+      request.subscribe((coasters: Array<Coaster>) => {
+        
+      for(var i in coasters) {
+        temp.unshift(coasters[i]);
+      }
+
+      this.frontCoasters = temp
+    })
+
+    Promise.resolve();
+    })
+
+    Promise.resolve()
   }
 
   openEnd() {
@@ -162,7 +144,16 @@ export class HomePage implements OnInit {
     this.menu.close('first');
   }
 
+ionViewDidEnter() {
+  setTimeout(() => {
+    this.cdr.detectChanges();
+  }, 700);
+}
 
+stopPropagation(event: Event) {
+  event.preventDefault();
+  event.stopPropagation();
+}
   
 
  async openAddComponent() {

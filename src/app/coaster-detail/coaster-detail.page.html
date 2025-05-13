@@ -82,7 +82,7 @@
       <ion-toolbar>
         <ion-title size="small">
           <div class="large-toolbar-item-container" *ngIf="this.loadedCoaster.status">
-            <ion-chip class="large-toolbar-item" *ngIf="this.loadedCoaster.status.calculated_wait && this.loadedCoaster.status.open">
+            <ion-chip class="large-toolbar-item" class="large-toolbar-item" *ngIf="this.loadedCoaster.status.calculated_wait && this.loadedCoaster.status.open" style="background-color: {{ mainService.interpolateIonicColors('success', 'warning', Math.min(1-(this.loadedCoaster.status.calculated_wait/100))) }}">
               <ion-icon name="hourglass-outline" color="black"></ion-icon>
               <ion-label style="font-weight:bold">{{this.loadedCoaster.status.calculated_wait}} min</ion-label>
             </ion-chip>
@@ -101,7 +101,7 @@
             <ion-chip class="large-toolbar-item" style="background-color:var(--ion-color-danger); color:white" *ngIf="!this.loadedCoaster.status.standing">
               Removed
             </ion-chip>
-            <ion-chip class="large-toolbar-item" *ngIf="this.loadedCoaster.status.posted_wait && this.loadedCoaster.status.open">
+            <ion-chip style="background-color: {{ mainService.interpolateIonicColors('success', 'warning', Math.min(1-(this.loadedCoaster.status.posted_wait/100))) }}" class="large-toolbar-item" *ngIf="this.loadedCoaster.status.posted_wait && this.loadedCoaster.status.open">
               <ion-icon name="time-outline" color="black"></ion-icon>
               <ion-label>{{this.loadedCoaster.status.posted_wait}} min posted</ion-label>
             </ion-chip>

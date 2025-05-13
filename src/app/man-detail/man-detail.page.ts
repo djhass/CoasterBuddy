@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { MainService } from '../main.service';
 
 @Component({
   selector: 'app-man-detail',
@@ -23,7 +24,8 @@ export class ManDetailPage implements OnInit {
 
   constructor(
     private activatedRoute: ActivatedRoute, 
-    private http: HttpClient
+    private http: HttpClient,
+    private mainService: MainService
   ) {
         this.page = location.pathname.split('/')[1]
         console.log(this.page)
@@ -49,7 +51,7 @@ export class ManDetailPage implements OnInit {
   }
 
   getMakeData(makeid) {
-    let url = `http://localhost:8080/make/${makeid}` //`https://server.coasterbuddy.app/api/make/${makeid}`
+    let url = `${this.mainService.SERVERURL}/make/${makeid}` //`https://server.coasterbuddy.app/api/make/${makeid}`
     let httpHeaders = new HttpHeaders({
       'accept': 'application/json',
     })

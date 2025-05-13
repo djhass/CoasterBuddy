@@ -31,17 +31,26 @@ export class FilterComponent implements OnInit {
   maxTally: number;
   earliestDate: Date;
   currentDate: Date;
-  models: Array<String>;
+  tags: Array<string>
   parks: Array<Park>;
   makes: Array<Make>;
   topSpeed: number;
   topHeight: number;
   topLength: number;
+  topDuration: number;
+  topAcceleration: number;
+  topCapacity: number;
+  topTally: number;
+  topInversions: number;
+
   logPage: LogPage;
+
 
   initialFilterObj = new Filter();
 
   filters: Filter;
+
+  metric: boolean;
 
 
   constructor(
@@ -50,15 +59,24 @@ export class FilterComponent implements OnInit {
     public mainService: MainService
   ) { 
 
+
     this.credit_list = [...this.coastersService.credit_list];
     this.getMaxTally();
     this.getOldestDate();
     this.currentDate = new Date();
     this.parks = this.coastersService.parksInCredits().filter(obj => {return obj.id})
     this.makes = this.coastersService.manufacturersInCredits().filter(obj => {return obj.id})
+    this.tags = this.coastersService.tagsInCredits()
     this.setTopValues();
 
-    this.initializeFilters();
+    //fix edge case: unit settings were switched
+    if (this.mainService.filters && (this.mainService.settings.metric != this.mainService.creditFilterUnitChangeDetect)) {
+      this.clearFilters();
+    }
+    else {
+      this.initializeFilters();
+    }
+
     
     if (this.mainService.filters) {
       this.filters = _.cloneDeep(this.mainService.filters);
@@ -66,6 +84,9 @@ export class FilterComponent implements OnInit {
     if (this.mainService.initialFilterObj) {
       this.initialFilterObj = _.cloneDeep(this.mainService.initialFilterObj);
     }
+
+    this.setTopValues();
+    this.mainService.creditFilterUnitChangeDetect = this.mainService.settings.metric;
   }
 
   ngOnInit() {
@@ -77,7 +98,7 @@ export class FilterComponent implements OnInit {
   }
 
   getMaxTally() {
-    let high = 10;
+    let high = 0;
     for (let i = 0; i < this.credit_list.length; i++) {
       if (this.credit_list[i].tally > high) {
         high = this.credit_list[i].tally;
@@ -101,100 +122,53 @@ export class FilterComponent implements OnInit {
   }
 
   setTopValues() {
+
     if (this.mainService.settings.metric) { //metric units
       this.topSpeed = 80; //km/h
       this.topHeight = 30; //m
       this.topLength = 300; //m
+      this.topAcceleration = 5//mph/s
     }
     else {
       this.topSpeed = 50; //mph
       this.topHeight = 100; //ft
       this.topLength = 1000; //ft
+      this.topAcceleration = 5//km/hr/s
     }
+    this.topTally = 1;
+    this.topInversions = 1;
+    this.topDuration = 10; //seconds
+    this.topCapacity = 1; //riders/hr
+
     for (let i = 0; i < this.coastersService.fullSortedList.length; i++) {
       let credit = this.coastersService.fullSortedList[i];
-      let speed, height, length = 0
-
-      //extract values
-      if (this.mainService.settings.metric) { //if metric
-        //speed
-        if (credit.max_speed.metric) {
-          speed = credit.max_speed.metric
-        }
-        else if (credit.max_speed.imperial) {
-          speed = Math.round(credit.max_speed.imperial / 0.621371)
-        }
-        else {
-          speed = 0;
-        }
-
-        //height
-        if (credit.max_height.metric) {
-          height = credit.max_height.metric
-        }
-        else if (credit.max_height.imperial) {
-          height = Math.round(credit.max_height.imperial / 3.280839895)
-        }
-        else {
-          height = 0;
-        }
-
-        //length
-        if (credit.length.metric) {
-          length = credit.length.metric
-        }
-        else if (credit.length.imperial) {
-          length = Math.round(credit.length.imperial / 3.280839895)
-        }
-        else {
-          length = 0;
-        }
-      }
-      else { //if imperial
-        //speed
-        if (credit.max_speed.imperial) {
-          speed = credit.max_speed.imperial
-        }
-        else if (credit.max_speed.metric) {
-          speed = Math.round(credit.max_speed.metric * 0.621371)
-        }
-        else {
-          speed = 0;
-        }
-
-        //height
-        if (credit.max_height.imperial) {
-          height = credit.max_height.imperial
-        }
-        else if (credit.max_height.metric) {
-          height = Math.round(credit.max_height.metric * 3.280839895)
-        }
-        else {
-          height = 0;
-        }
-
-        //length
-        if (credit.length.imperial) {
-          length = credit.length.imperial
-        }
-        else if (credit.length.metric) {
-          length = Math.round(credit.length.metric * 3.280839895)
-        }
-        else {
-          length = 0;
-        }
-      }
 
       //if values larger, make them the new limit
-      if (speed > this.topSpeed) {
-        this.topSpeed = speed;
+      if (this.getValue(credit.max_speed, 0.621371) > this.topSpeed) {
+        this.topSpeed = this.getValue(credit.max_speed, 0.621371);
       }
-      if (height > this.topHeight) {
-        this.topHeight = height;
+      if (this.getValue(credit.max_height, 3.280839895) > this.topHeight) {
+        this.topHeight = this.getValue(credit.max_height, 3.280839895);
       }
-      if (length > this.topLength) {
-        this.topLength = length;
+      if (this.getValue(credit.length, 3.280839895) > this.topLength) {
+        this.topLength = this.getValue(credit.length, 3.280839895);
       }
+      if (credit.max_acceleration && this.getValue(credit.max_acceleration, 0.621371) > this.topAcceleration) {
+        this.topAcceleration = this.getValue(credit.max_acceleration, 0.621371);
+      }
+      if (credit.tally > this.topTally) {
+        this.topTally = credit.tally;
+      }
+      if (credit.inversions > this.topInversions) {
+        this.topInversions = credit.inversions;
+      }
+      if (credit.duration > this.topDuration) {
+        this.topDuration = credit.duration;
+      }
+      if (credit.capacity > this.topCapacity) {
+        this.topCapacity = credit.capacity;
+      }
+
     }
   }
 
@@ -203,14 +177,16 @@ export class FilterComponent implements OnInit {
     this.filters.speedRange = new Range(0,this.topSpeed);
     this.filters.heightRange = new Range(0, this.topHeight);
     this.filters.lengthRange = new Range(0, this.topLength);
-    this.filters.inversionRange = new Range(0, 14);
+    this.filters.inversionRange = new Range(0, this.topInversions);
     this.filters.tallyRange = new Range(0, this.maxTally);
+    this.filters.accelerationRange = new Range(0, this.topAcceleration);
+    this.filters.durationRange = new Range(0, this.topDuration)
     this.filters.dateRange = {lower: this.earliestDate.toISOString(), upper: new Date().toISOString()};
     this.filters.keepEmptyTallys = true;
     this.filters.keepEmptyDates = true;
     this.filters.parks = this.parks.map(park => park.id);
     this.filters.makes = this.makes.map(make => make.id);
-    this.filters.models = this.models;
+    this.filters.tags = this.tags;
     this.filters.statusesOptions = {
       defunct: true,
       standing: true,
@@ -241,6 +217,15 @@ export class FilterComponent implements OnInit {
     this.mainService.filters.appliedFilters = false;
     this.coastersService.displayCreditList = [...this.coastersService.credit_list];
     this.closeModal();
+  }
+
+  secondsToTime(input: number) {
+    if (input == 0 || isNaN(input)) {
+      return ""
+    }
+    else {
+      return (Math.round(input/60) + ":" + Math.round(input%60)).padStart(2, '0');
+    }
   }
 
   getValue(obj: UnitObj, factor: number) {
@@ -290,8 +275,8 @@ export class FilterComponent implements OnInit {
           ((this.filters.statusesOptions.standing) && (credit.status.standing)) ||
           ((this.filters.statusesOptions.defunct) && (!(credit.status.operable) && !(credit.status.standing)))) &&
         (!credit.park || (this.filters.parks.filter(id => {id == credit.park.id}))) &&
-        (!credit.make || (this.filters.makes.filter(id => {id == credit.make.id})))
-      
+        (!credit.make || (this.filters.makes.filter(id => {id == credit.make.id}))) &&
+        (!credit.tags || (credit.tags.every(item => this.filters.tags.includes(item))))
       )
     })
   }

@@ -138,20 +138,32 @@ export class CoastersService {
     }
     return tempList;
   }
-    //get list of parks in credit list
-    parksInCredits() {
-      let tempList: Array<Park> = [];
-      for (let i = 0; i < this.credit_list.length; i++) {
-        const park = this.credit_list[i]?.park;
-        if (typeof park !== 'undefined' && park !== null) {
-          // Check if the park already exists in the tempList
-          if (!tempList.some(existingPark => (existingPark.id === park.id) && (existingPark.name === park.name))) { 
-            tempList.push(park);
-          }
+  //get list of parks in credit list
+  parksInCredits() {
+    let tempList: Array<Park> = [];
+    for (let i = 0; i < this.credit_list.length; i++) {
+      const park = this.credit_list[i]?.park;
+      if (typeof park !== 'undefined' && park !== null) {
+        // Check if the park already exists in the tempList
+        if (!tempList.some(existingPark => (existingPark.id === park.id) && (existingPark.name === park.name))) { 
+          tempList.push(park);
         }
       }
-      return tempList;
     }
+    return tempList;
+  }
+
+  tagsInCredits() {
+    let tempList: Array<string> = [];
+    for (let i = 0; i < this.credit_list.length; i++) {
+      for (let j = 0; j < this.credit_list[i].tags.length; j++) {
+        if (!tempList.includes(this.credit_list[i].tags[j])) {
+          tempList.push(this.credit_list[i].tags[j])
+        }
+      }
+    }
+    return tempList;
+  }
 
 
   //credit list manipulation functions
@@ -190,6 +202,14 @@ export class CoastersService {
     
     //add coaster to credit list
   pushCredit(credit: Credit) {
+    credit = {...credit};
+    credit.tally = 1;
+    credit.time = new Date().toISOString();
+    credit.status = {
+      standing: credit.status.standing,
+      operable: credit.status.operable,
+      open: credit.status.open
+    }
     this.credit_list.unshift(credit);
     this.setData()
   }
@@ -204,6 +224,16 @@ export class CoastersService {
       }
     }
     return temp.length;
+  }
+
+  numberOfSpecialsInCredits() {
+    let returnInt = 0;
+    for (let credit of this.credit_list) {
+      if(credit.bucket_list) {
+        returnInt++;
+      }
+    }
+    return returnInt;
   }
     //returns number of manufacturers in credit list
   numberOfMansInCredits() {

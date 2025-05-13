@@ -44,77 +44,100 @@
 
 <ion-content>
 
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" style="padding-bottom: 24px; padding-right: 12px; ">
+    <ion-fab-button expand="full" style="width: 72px; height: 72px;">
+      <ion-icon name="cloud-upload" style="width: 46px; height: 46px;"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
   <ion-toolbar class="ion-safe-area-top" style="top: 12px; height: 8vh; --background: transparent !important; --ion-color-base: transparent !important;">
     <ion-buttons slot="start" style="padding-left: 2vw; padding-top: 2vh">
       <ion-button color="dark" size = "large" (click)="openEnd()">
         <ion-icon name="menu" size="large"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-buttons slot="end" style="padding-right: 10px; padding-top: 20px">
-      <ion-button size = "large" (click)="openAddComponent();">
-        <ion-text color="dark" style="font-weight: 900;">
-          Add Rides
-        </ion-text>
-      </ion-button>
-    </ion-buttons>
   </ion-toolbar>
 
-  <ion-card color="light" style="height: 40.25vh; width: 40.25vh; display: flex; flex-direction: column;">
-    <ion-card-header>
-      <ion-card-title [routerLink]="['./park', frontPark.name]" style="text-overflow: ellipsis;">{{ frontPark.name }}</ion-card-title>
+  <ion-card *ngIf="this.frontPark.id" color="light" style="height: 42.5vh; display: flex; flex-direction: column;">
+    <ion-card-header style="padding-bottom: 20px;">
+      <ion-card-title style="text-overflow: ellipsis;">{{ frontPark.short_name ? frontPark.short_name : frontPark.name }}</ion-card-title>
+      <ion-icon style="position: absolute; left: 85%;" [routerLink]="['./park', frontPark.id]" name="information-circle-outline" color="dark" size="large"></ion-icon>
     </ion-card-header>
-      <ion-list style="padding: 0px; overflow: hidden; overflow-y: auto;" color="transparent">
-            <ion-item class="frontList" mode="md" detail="false" *ngFor="let coaster of frontCoasters;" style="padding-bottom: 0px;" color="transparent">
-              <ion-avatar slot="start" style="padding-left: 0px;">
-                <ion-thumbnail size="large">
-                  <!--Green Plus Mark-->
-                  <ion-icon name="add" color="success" size="large" (click)="coastersService.pushCredit(coaster); coastersService.setData()" *ngIf="!coastersService.creditIsInList(coaster?.id)"></ion-icon> 
-                  <!--Tally Counter-->
-                  <ion-button (click)="coastersService.tallyCredit(coaster?.id); coastersService.setData()" *ngIf="coastersService.creditIsInList(coaster?.id) && coastersService.getCredit(coaster?.id).tally" color="transparent" style="--box-shadow:none; --ripple-color: transparent">
-                    <ion-text style="font-size: 20px;" >{{ coastersService.getCredit(coaster?.id).tally }}</ion-text>
-                    <ion-icon name="add"></ion-icon>
-                  </ion-button>
-                  <!--Generic Checkmark for incomplete Tally-->
-                  <ion-icon name="checkmark" size="large" *ngIf="!(coastersService.getCredit(coaster?.id).tally || !coastersService.creditIsInList(coaster?.id))"></ion-icon>
-                </ion-thumbnail>
-              </ion-avatar>  
-              <ion-avatar slot="end" [routerLink]="['./coaster', coaster?.id]" *ngIf="!coastersService.creditIsInList(coaster?.id)">
-                <ion-thumbnail size="large">
-                  <ion-icon name="information-circle-outline" color="dark" size="large"></ion-icon>
-                </ion-thumbnail>
-              </ion-avatar> 
-              <ion-avatar slot="end" [routerLink]="['./credit', coaster?.id]" *ngIf="coastersService.creditIsInList(coaster?.id)">
-                <ion-thumbnail size="large">
-                  <ion-icon name="information-circle-outline" color="dark" size="large"></ion-icon>
-                </ion-thumbnail>
-              </ion-avatar>
-              <ion-col>
-                  <ion-row>
-                    <ion-label style="font-size: 18px; text-overflow: ellipsis;"> 
-                      {{ coaster?.name }} 
-                    </ion-label>
-                  </ion-row>
-                </ion-col>
-            </ion-item>
-      </ion-list>
-    
+    <ion-list style="padding: 0px; overflow: hidden; overflow-y: auto; color:transparent; background-color: transparent;">
+      <ion-item [routerLink]="['./coaster', coaster?.id]" *ngFor="let coaster of frontCoasters;" style="background-color: transparent; height: 55px; border-width: 4px; border-color:blue" color="transparent">
+        <ion-avatar slot="start" style="padding-left: 0px;">
+          <ion-thumbnail size="large">
+            <!--Green Plus Mark-->
+            <ion-icon name="add" color="success" size="large" (click)="stopPropagation($event); coastersService.pushCredit(coaster); coastersService.setData(); " *ngIf="!coastersService.creditIsInList(coaster?.id)"></ion-icon> 
+            <!--Tally Counter-->
+            <ion-button (click)="stopPropagation($event); coastersService.tallyCredit(coaster?.id); coastersService.setData(); " *ngIf="coastersService.creditIsInList(coaster?.id) && coastersService.getCredit(coaster?.id).tally" color="transparent" style="--box-shadow:none; --ripple-color: transparent">
+              <ion-text style="font-size: 20px;" >{{ coastersService.getCredit(coaster?.id).tally }}</ion-text>
+              <ion-icon name="add"></ion-icon>
+            </ion-button>
+            <!--Generic Checkmark for incomplete Tally-->
+            <ion-icon name="checkmark" size="large" *ngIf="!(coastersService.getCredit(coaster?.id).tally || !coastersService.creditIsInList(coaster?.id))"></ion-icon>
+          </ion-thumbnail>
+        </ion-avatar>
+        <ion-avatar slot="end" style="padding-right: 85px;">
+          <ion-thumbnail size="large" *ngIf="coaster.status.calculated_wait || coaster.status.posted_wait">
+            <ion-chip *ngIf="!coaster.status.testing && (coaster.status.posted_wait && !coaster.status.calculated_wait)" style="
+              font-size: 18px; color: black; 
+              background-color: {{ mainService.interpolateIonicColors('success', 'warning', Math.min(1-(coaster.status.posted_wait/100))) }}
+              ">
+              {{coaster.status.posted_wait}}
+              <ion-icon name="time" style="color:black"></ion-icon>
+            </ion-chip>
+            <ion-chip *ngIf="!coaster.status.testing && coaster.status.calculated_wait" style="
+              font-size: 18px; 
+              font-weight: bold;
+              color: black; 
+              background-color: {{ mainService.interpolateIonicColors('success', 'warning', Math.min(1-(coaster.status.calculated_wait/100))) }}
+              ">
+              {{coaster.status.calculated_wait}}
+              <ion-icon name="hourglass-outline" style="color:black"></ion-icon>
+            </ion-chip>
+            <ion-chip *ngIf="coaster.status.testing" style="
+              font-size: 18px; 
+              font-weight: bold;
+              color: black; 
+              background-color: var(--ion-color-warning)
+              ">
+              
+              <ion-icon name="warning-outline" style="color:black; padding-right: 12px;"></ion-icon>
+            </ion-chip>
+          </ion-thumbnail>
+        </ion-avatar>
+        <ion-label style="font-size: 20px; text-overflow: ellipsis;"> 
+          {{ coaster.short_name ? coaster.short_name : coaster.name }}
+        </ion-label>
+      </ion-item>
+    </ion-list>
   </ion-card>
 
-      <div *ngIf="frontTimesCoasters.length > 0" style="white-space: nowrap; overflow-x:scroll; --webkit-scrollbar:hidden; padding-bottom:4px;">
-        <ion-chip *ngFor="let coaster of frontTimesCoasters" style="height: 5.5vh; max-width: 50vw; pointer-events: false; border-radius: 5px;">
-          <ion-avatar style="height: 4.4vh !important; width: 4.4vh !important; align-items: center; justify-content: center; display: flex; background-color: {{ coaster.is_open ? (mainService.interpolateIonicColors('success', 'warning', Math.min(1-(coaster?.wait_time/120)))) : 'var(--ion-color-danger)' }}">
-            <ion-text style="font-size: 2.2vh; font-weight: bold; color: black;" *ngIf="coaster.is_open">
-              {{coaster?.wait_time}}
-            </ion-text>
-            <ion-icon name="close" size="large" style="color: black" *ngIf="!coaster.is_open"></ion-icon>
-          </ion-avatar>
-          <ion-text style="font-size: 2vh; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; font-weight: bold;">
-            {{coaster?.name}}
-          </ion-text>
-        </ion-chip>
-      </div>
-
-
+  <ion-card *ngIf="!this.frontPark.id" color="transparent" style="height: 42.5vh; display: flex; flex-direction: column;">
+    <ion-fab>
+      <ion-fab-button style="height: 26.8vh; width: 26.8vh; " color="secondary">
+        <ion-text color="light" style="font-weight:bold; font-size: 36px;">
+          {{this.coastersService.credit_list.length}} Credits
+        </ion-text>
+      </ion-fab-button>
+      <ion-fab-button style="height: 15.2vh; width: 15.2vh; position: absolute; left: 15%; top: 101%; pointer-events: none;" color="tertiary">
+        <ion-text color="light" style="font-weight:bold; font-size: 21px;">
+            {{this.coastersService.numberOfMansInCredits()}} Makes
+        </ion-text>
+      </ion-fab-button>
+      <ion-fab-button style="height: 15.2vh; width: 15.2vh; position: absolute; left: 101%; top: 15%; pointer-events: none;" color="danger">
+        <ion-text color="light" style="font-weight:bold; font-size: 21px;">
+          {{this.coastersService.numberOfSpecialsInCredits()}} Specials
+        </ion-text>
+      </ion-fab-button>
+      <ion-fab-button style="height: 19.55vh; width: 19.55vh; position: absolute; left: 75.5%; top: 75.5%; pointer-events: none;" color="success">
+        <ion-text color="light" style="font-weight:bold; font-size: 28px;">
+          {{this.coastersService.numberOfParksInCredits()}} Parks
+        </ion-text>
+      </ion-fab-button>
+    </ion-fab>
+  </ion-card>
 </ion-content>
 
 <!--Home Button-->

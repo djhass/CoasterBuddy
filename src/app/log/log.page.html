@@ -71,9 +71,9 @@
     </ion-item>
   </ion-header>
 
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed" style="padding-bottom: 16px; padding-right: 10px; " *ngIf="!(list_select != 'Coasters' || sort_select != 'rank' || mainService.filters?.appliedFilters || this.edit || !this.displayFab)">
-    <ion-fab-button (click)="openAddComponent()" expand="full" style="width: 62px; height: 62px;">
-      <ion-icon name="add" style="width: 38px; height: 38px;"></ion-icon>
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" style="padding-bottom: 24px; padding-right: 12px;" *ngIf="!(list_select != 'Coasters' || sort_select != 'rank' || mainService.filters?.appliedFilters || this.edit || !this.displayFab)">
+    <ion-fab-button (click)="openAddComponent()" expand="full" style="width: 72px; height: 72px;">
+      <ion-icon name="add" style="width: 46px; height: 46px;"></ion-icon>
     </ion-fab-button>
   </ion-fab>
 
@@ -155,7 +155,7 @@
       <ion-thumbnail style="width:fit-content; padding-right: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center;" *ngIf="(sort_select == 'duration') || (sort_select == 'tally') || (sort_select == 'inversions')">
         <ion-label style="font-size: 18px; font-weight: bold" *ngIf="sort_select == 'tally'">{{ coaster?.tally }}</ion-label>
         <ion-label style="font-size: 18px; font-weight: bold" *ngIf="sort_select == 'inversions'">{{ coaster?.inversions }}</ion-label>
-        <ion-label style="font-size: 18px; font-weight: bold" *ngIf="sort_select == 'duration'">{{ Math.round(coaster.duration / 60)}}:{{(coaster.duration % 60).toString().padStart(2, '0') }}</ion-label>
+        <ion-label style="font-size: 18px; font-weight: bold" *ngIf="sort_select == 'duration'">{{ secondsToTime(coaster.duration) }}</ion-label>
       </ion-thumbnail>
         <ion-col>
           <ion-row>
@@ -167,7 +167,7 @@
             <ion-label style="font-size: 15px;" color="medium"> {{ coaster?.park?.name }} </ion-label>
           </ion-row>
           <ion-row>
-            <ion-label style="font-size: 15px; font-weight: bold;" *ngIf="sort_select == 'time' && coaster.time" disabled="true">{{ ISOToReadable(coaster.time) }}</ion-label>
+            <ion-label style="font-size: 15px; font-weight: bold;" *ngIf="sort_select == 'time' && coaster.time" disabled="true">{{ "ISOToReadable(coaster.time)" }}</ion-label>
             <ion-label style="font-size: 18px; font-weight: bold;" *ngIf="sort_select == 'length' && coaster.length"> 
               <ion-text *ngIf="coaster.length.imperial && (!this.mainService.settings.metric || (this.mainService.settings.defaultUnits && !coaster.prefersMetric))"> 
                 {{ Math.round(coaster.length.imperial) }} ft

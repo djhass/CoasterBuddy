@@ -90,6 +90,15 @@ export class LogPage implements OnInit {
     });
   }
 
+  secondsToTime(input: number) {
+    if (input == 0 || isNaN(input)) {
+      return ""
+    }
+    else {
+      return (Math.round(input/60) + ":" + this.Math.round(input%60)).padStart(2, '0');
+    }
+  }
+
   showFab() {
     this.displayFab = true;
   }
@@ -275,15 +284,15 @@ unHighlightElements() {
     return count;
  }
 
-creditsInMake(make) {
-  var count = 0
-  for (let i = 0; i < this.coastersService.credit_list.length; i++) {
-    if (this.coastersService.credit_list[i]?.make?.id ? this.coastersService.credit_list[i]?.make?.id == make.id : this.coastersService.credit_list[i]?.make?.name == make.name) {
-      count++;
+  creditsInMake(make) {
+    var count = 0
+    for (let i = 0; i < this.coastersService.credit_list.length; i++) {
+      if (this.coastersService.credit_list[i]?.make?.id ? this.coastersService.credit_list[i]?.make?.id == make.id : this.coastersService.credit_list[i]?.make?.name == make.name) {
+        count++;
+      }
     }
+    return count;
   }
-  return count;
-}
 
   sortByPopularity(array) {
     if (array.length <= 1) {

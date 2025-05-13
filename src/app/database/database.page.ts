@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CoastersService } from '../coasters.service';
+import { MainService } from '../main.service';
 import { Coaster } from '../models.model';
 
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -38,6 +39,7 @@ export class DatabasePage implements OnInit {
     private http: HttpClient,
     private toastController: ToastController,
     public coastersService: CoastersService,
+    public mainService:  MainService
   ) {
     this.getRandomCoaster();
   }
@@ -65,7 +67,7 @@ export class DatabasePage implements OnInit {
   }
 
   async getRandomCoaster() {
-    this.randomCoaster = await this.http.get<Coaster>("http://localhost:8080/randomride", {
+    this.randomCoaster = await this.http.get<Coaster>(`${this.mainService.SERVERURL}/randomride`, {
       headers: new HttpHeaders({ 'accept': 'application/json' })
     }).toPromise();
     console.log(this.randomCoaster)
@@ -75,7 +77,7 @@ export class DatabasePage implements OnInit {
     this.searched = true;
     if (input && input.trim() !== "") {
       let temp: Array<any> = [];
-      let requestURL = `http://localhost:8080/search/${input}?include=all`;
+      let requestURL = `${this.mainService.SERVERURL}/search/${input}?include=all`;
       
       try {
         const obj = await this.http.get<Array<Coaster>>(requestURL, {

@@ -174,7 +174,7 @@ async searchItems(input: string) {
   console.log("test")
   if (input && input.trim() != "") {
     let temp: Array<any> = []
-    let requestURL = `http://localhost:8080/search/${input}?include=rides`;
+    let requestURL = `${this.mainService.SERVERURL}/search/${input}?include=rides`;
     
     const obj = await this.http.get<Array<Coaster>>(requestURL, {headers: new HttpHeaders({'accept': 'application/json'})}).toPromise();
     

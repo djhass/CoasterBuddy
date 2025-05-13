@@ -73,17 +73,17 @@ export class Coaster {
   make?: Make;
   models?: Array<string>;
   status?: RideStatus;
-  duration?: number;
+  duration?: number; //
   length?: UnitObj;
   max_speed?: UnitObj;
-  max_acceleration?: UnitObj;
+  max_acceleration?: UnitObj; //
   max_height?: UnitObj;
   drop_height?: UnitObj;
   website?: string;
   popularity?: number;
   latitude?: number;
   longitude?: number;
-  capacity?: number;
+  capacity?: number; //
   tags?: Array<string>;
   records?: Array<Record>;
   photo?: string;
@@ -94,6 +94,8 @@ export class Coaster {
   propulsion?: string;
   material?: string;
   pov?: string;
+  bucket_list?: boolean;
+  max_force?: number;
   id: string
 
 	public constructor(object?: Object) {
@@ -228,10 +230,14 @@ export class Filter {
 	popularityRange?: Range;
 	inversionRange?: Range;
 	tallyRange?: Range;
+  durationRange?: Range;
+  accelerationRange?: Range;
+  capacityRange?: Range;
 	dateRange?: StrRange;
 	keepEmptyTallys?: boolean;
 	keepEmptyDates?: boolean;
 	statusesOptions?: StatusesOptions;
+  tags?: Array<string>;
 	parks?: Array<string>;
 	makes?: Array<string>;
 	materialsOptions: {

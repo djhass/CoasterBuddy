@@ -12,6 +12,8 @@ import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
+import { MainService } from '../main.service';
+
 
 @Component({
   selector: 'app-feedback',
@@ -35,6 +37,7 @@ export class FeedbackComponent implements OnInit {
     private modalController: ModalController,
     private http: HttpClient,
     private alertCtrl: AlertController,
+    private mainService: MainService
   ) {
     this.showLoad = false;
   }
@@ -97,7 +100,7 @@ export class FeedbackComponent implements OnInit {
     console.log(`Name: ${this.name}, Email: ${this.email}, Feedback: ${this.feedback}`);
     
 
-    let url = "https://server.coasterbuddy.app/feedback"
+    let url = `${this.mainService.SERVERURL}.app/feedback`
     let httpHeaders = new HttpHeaders({
       'accept': 'application/json',
     })
